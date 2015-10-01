@@ -7,7 +7,7 @@ Board::Board(SDL_Renderer *ren)
 {
 
 	// Create a base line
-	for (int i = 0; i < 600; i += 32)
+	for (int i = 0; i < 480; i += 32)
 	{
 
 		board_squares.push_back(Square(i, 800, nullptr,
@@ -17,7 +17,7 @@ Board::Board(SDL_Renderer *ren)
 			Line(i + 32, 800, i + 32, 800 + 32)));
 	
 	}
-	
+
 }
 
 
@@ -104,18 +104,17 @@ bool Board::CheckForFail()
 
 	for (unsigned int i = 0; i < board_squares.size(); ++i)
 	{
-
+		/*
 		if (board_squares[i].top.a.y <= 0)
 		{
 
 			return true;
 
-		}
+		}*/
 
 	}
 
 	return false;
-
 }
 
 

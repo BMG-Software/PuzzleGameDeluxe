@@ -61,10 +61,28 @@ public:
 		std::vector<Square> board_squares);
 
 
+	bool CheckAdvancedCollision(Line block_line, Line board_line, int limit);
+
+
 	bool DrawBlock(SDL_Renderer *ren, std::vector<Square> board_squares);
 
 
+	bool UpdatePosition(std::vector<Square> board_squares);
+
+
+	void RenderBlock(SDL_Renderer *ren);
+
+
 	void MoveBlock(std::vector<Square> board_squares, float frame_time);
+
+
+	void HandleUp(const Uint8 *state, std::vector<Square> board_squares);
+
+
+	void HandleLeftAndRight(const Uint8 *state, std::vector<Square> board_squares);
+
+
+	void HandleDown(const Uint8 *state, float frame_time);
 
 
 	Block GetCurrentBlock();

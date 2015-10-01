@@ -76,9 +76,7 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 
 		for (unsigned int x = 0; x < board_squares.size(); ++x)
 		{
-
-			// This could do with refactoring. It seems inefficient in it's current state
-
+			
 			if (direction == UP)
 			{
 
@@ -99,15 +97,14 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 					board_squares[x].top))
 				{
 
+					std::cout << block_squares[i].down.a.y << "\n" << block_squares[i].down.b.y
+						<< "\n" << board_squares[x].top.a.y << "\n" << board_squares[x].top.b.y << "\n.";
+					system("pause");
 					return true;
 
 				}
 
 			}
-
-			// may be repeating myself with horizontal and vertical lines.
-			// Surely if the same parameters are being passed in but in a 
-			// different order it would turn up the same results...
 
 			if (direction == LEFT)
 			{
@@ -119,11 +116,11 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 					return true;
 
 				}
-				else if (PointInLineRange(block_squares[i].left.a, board_squares[x].right)
-					|| PointInLineRange(block_squares[i].left.b, board_squares[x].right)
-					|| block_squares[i].left.a.x == 0)
+				else if (CheckAdvancedCollision(block_squares[i].left, board_squares[x].left, 0))
 				{
+
 					return true;
+
 				}
 
 			}
@@ -138,15 +135,33 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 					return true;
 
 				}
-				else if (PointInLineRange(block_squares[i].right.a, board_squares[x].left)
-					|| PointInLineRange(block_squares[i].right.b, board_squares[x].left)
-					|| block_squares[i].right.a.x == 480)
+				else if (CheckAdvancedCollision(block_squares[i].right, board_squares[x].left, 480))
 				{
+
 					return true;
+
 				}
 
 			}
+
 		}
+
+	}
+
+	return false;
+
+}
+
+
+bool BlockControl::CheckAdvancedCollision(Line block_line, Line board_line, int limit)
+{
+
+	if (PointInLineRange(block_line.a, board_line)
+		|| PointInLineRange(block_line.b, board_line)
+		|| block_line.a.x == limit)
+	{
+
+		return true;
 
 	}
 	return false;
@@ -168,26 +183,52 @@ void BlockControl::GenerateRandomBlock()
 bool BlockControl::DrawBlock(SDL_Renderer *ren, std::vector<Square> board_squares)
 {
 
-	// refactor into two different functions
+	if (UpdatePosition(board_squares))
+	{
+
+		return true;
+
+	}
+
+	RenderBlock(ren);
+
+	return false;
+
+}
+
+
+bool BlockControl::UpdatePosition(std::vector<Square> board_squares)
+{
 
 	for (int i = 0; i < speed; ++i)
 	{
 
 		if (!CheckCollision(current_block.current_squares, DOWN, board_squares))
 		{
+
 			current_block.UpdateSquares(0, 1);
+			return false;
+
 		}
 		else
 		{
+
 			return true;
+		
 		}
 
 	}
 
+}
+
+
+void BlockControl::RenderBlock(SDL_Renderer *ren)
+{
+	
 	for (unsigned int i = 0; i < current_block.current_squares.size(); ++i)
 	{
 
-		Utilities::RenderTexture(ren, current_block.current_squares[i].tex.get(), 
+		Utilities::RenderTexture(ren, current_block.current_squares[i].tex.get(),
 			current_block.current_squares[i].x, current_block.current_squares[i].y);
 
 		std::vector<Line> my_lines;
@@ -200,8 +241,6 @@ bool BlockControl::DrawBlock(SDL_Renderer *ren, std::vector<Square> board_square
 		Utilities::DrawLines(ren, my_lines);
 	}
 
-	return false;
-
 }
 
 
@@ -212,25 +251,26 @@ void BlockControl::MoveBlock(std::vector<Square> board_squares, float frame_time
 
 	const Uint8 *current_state = SDL_GetKeyboardState(NULL);
 
-	// game_timer.PauseTimer();
-
-	if (current_state[SDL_SCANCODE_RIGHT] && game_timer.GetTimeSeconds() > time_updated + 0.1
-		&& !CheckCollision(current_block.current_squares, RIGHT, board_squares))
+	if (game_timer.GetTimeSeconds() > time_updated + 0.1)
 	{
-		current_block.UpdateSquares(32, 0);
+		
+		HandleLeftAndRight(current_state, board_squares);
 
-		time_updated = game_timer.GetTimeSeconds();
+		HandleUp(current_state, board_squares);
+
 	}
 
-	if (current_state[SDL_SCANCODE_LEFT] && game_timer.GetTimeSeconds() > time_updated + 0.1
-		&& !CheckCollision(current_block.current_squares, LEFT, board_squares))
-	{
-		current_block.UpdateSquares(-32, 0);
+	HandleDown(current_state, frame_time);
 
-		time_updated = game_timer.GetTimeSeconds();
-	}
+}
 
-	if (current_state[SDL_SCANCODE_UP] && game_timer.GetTimeSeconds() > time_updated + 0.1
+
+void BlockControl::HandleUp(const Uint8* state, std::vector<Square> board_squares)
+{
+
+	// Check collision based on the direction the block will be rotating to
+
+	if (state[SDL_SCANCODE_UP]
 		&& !CheckCollision(current_block.current_squares, UP, board_squares)
 		&& !CheckCollision(current_block.current_squares, DOWN, board_squares)
 		&& !CheckCollision(current_block.current_squares, LEFT, board_squares)
@@ -241,7 +281,35 @@ void BlockControl::MoveBlock(std::vector<Square> board_squares, float frame_time
 		time_updated = game_timer.GetTimeSeconds();
 	}
 
-	if (current_state[SDL_SCANCODE_DOWN])
+}
+
+
+void BlockControl::HandleLeftAndRight(const Uint8 *state, std::vector<Square> board_squares)
+{
+
+	if (state[SDL_SCANCODE_RIGHT]
+		&& !CheckCollision(current_block.current_squares, RIGHT, board_squares))
+	{
+		current_block.UpdateSquares(32, 0);
+
+		time_updated = game_timer.GetTimeSeconds();
+	}
+
+	if (state[SDL_SCANCODE_LEFT]
+		&& !CheckCollision(current_block.current_squares, LEFT, board_squares))
+	{
+		current_block.UpdateSquares(-32, 0);
+
+		time_updated = game_timer.GetTimeSeconds();
+	}
+
+}
+
+
+void BlockControl::HandleDown(const Uint8 *state, float frame_time)
+{
+
+	if (state[SDL_SCANCODE_DOWN])
 	{
 
 		if (speed < 10)
@@ -251,10 +319,12 @@ void BlockControl::MoveBlock(std::vector<Square> board_squares, float frame_time
 
 	}
 
-	if (!current_state[SDL_SCANCODE_DOWN])
+	if (!state[SDL_SCANCODE_DOWN])
 	{
 
 		speed = velocity * frame_time;
+
+		std::cout << "Moving down at: " << speed << ".\n";
 
 	}
 

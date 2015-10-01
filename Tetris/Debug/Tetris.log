@@ -1,4 +1,4 @@
-﻿Build started 01/10/2015 12:14:00.
+﻿Build started 01/10/2015 13:45:34.
      1>Project "C:\Users\Ben\Documents\GitHub\PuzzleGame\PuzzleGame\Tetris\Tetris.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\Ben\Documents\GitHub\PuzzleGame\PuzzleGame\Tetris\SDL2-devel-2.0.3-VC\SDL2-2.0.3\include" /I"C:\Users\Ben\Documents\GitHub\PuzzleGame\PuzzleGame\Tetris\SDL2 Expansion image-devel-2.0.0-VC\SDL2_image-2.0.0\include" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt board.cpp
@@ -15,4 +15,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.92
+Time Elapsed 00:00:00.88
