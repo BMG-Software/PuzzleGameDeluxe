@@ -4,6 +4,7 @@
 
 
 BlockControl::BlockControl(SDL_Renderer *ren)
+	: tex(nullptr, SDL_DestroyTexture)
 {
 
 	// There is definitly a better solution than loading tons of different text files.
@@ -25,7 +26,28 @@ BlockControl::BlockControl(SDL_Renderer *ren)
 	blocks.push_back(Block(ren, "Resources\\yellow.png", "Resources\\z-block.txt", "Resources\\z-block-r.txt",
 		"Resources\\z-block.txt", "Resources\\z-block-r.txt"));
 
-	speed = 3;
+	speed = 0;
+
+	velocity = 60;
+
+	game_timer.StartTimer();
+
+}
+
+
+BlockControl::BlockControl(const BlockControl &b) :
+    tex(b.tex)
+{
+
+	frame_num = b.frame_num;
+
+	speed = b.speed;
+
+	current_block = b.current_block;
+
+	blocks = b.blocks;
+
+	velocity = b.velocity;
 
 }
 
@@ -49,10 +71,10 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 	std::vector<Square> board_squares)
 {
 
-	for (int i = 0; i < block_squares.size(); ++i)
+	for (unsigned int i = 0; i < block_squares.size(); ++i)
 	{
 
-		for (int x = 0; x < board_squares.size(); ++x)
+		for (unsigned int x = 0; x < board_squares.size(); ++x)
 		{
 
 			// This could do with refactoring. It seems inefficient in it's current state
@@ -118,7 +140,7 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 				}
 				else if (PointInLineRange(block_squares[i].right.a, board_squares[x].left)
 					|| PointInLineRange(block_squares[i].right.b, board_squares[x].left)
-					|| block_squares[i].right.a.x == WIN_WIDTH)
+					|| block_squares[i].right.a.x == 480)
 				{
 					return true;
 				}
@@ -162,10 +184,10 @@ bool BlockControl::DrawBlock(SDL_Renderer *ren, std::vector<Square> board_square
 
 	}
 
-	for (int i = 0; i < current_block.current_squares.size(); ++i)
+	for (unsigned int i = 0; i < current_block.current_squares.size(); ++i)
 	{
 
-		Utilities::RenderTexture(ren, current_block.current_squares[i].tex, 
+		Utilities::RenderTexture(ren, current_block.current_squares[i].tex.get(), 
 			current_block.current_squares[i].x, current_block.current_squares[i].y);
 
 		std::vector<Line> my_lines;
@@ -183,32 +205,40 @@ bool BlockControl::DrawBlock(SDL_Renderer *ren, std::vector<Square> board_square
 }
 
 
-void BlockControl::MoveBlock(std::vector<Square> board_squares)
+void BlockControl::MoveBlock(std::vector<Square> board_squares, float frame_time)
 {
 
 	// Refactor
 
 	const Uint8 *current_state = SDL_GetKeyboardState(NULL);
 
-	if (current_state[SDL_SCANCODE_RIGHT]
+	// game_timer.PauseTimer();
+
+	if (current_state[SDL_SCANCODE_RIGHT] && game_timer.GetTimeSeconds() > time_updated + 0.1
 		&& !CheckCollision(current_block.current_squares, RIGHT, board_squares))
 	{
 		current_block.UpdateSquares(32, 0);
+
+		time_updated = game_timer.GetTimeSeconds();
 	}
 
-	if (current_state[SDL_SCANCODE_LEFT]
+	if (current_state[SDL_SCANCODE_LEFT] && game_timer.GetTimeSeconds() > time_updated + 0.1
 		&& !CheckCollision(current_block.current_squares, LEFT, board_squares))
 	{
 		current_block.UpdateSquares(-32, 0);
+
+		time_updated = game_timer.GetTimeSeconds();
 	}
 
-	if (current_state[SDL_SCANCODE_UP]
+	if (current_state[SDL_SCANCODE_UP] && game_timer.GetTimeSeconds() > time_updated + 0.1
 		&& !CheckCollision(current_block.current_squares, UP, board_squares)
 		&& !CheckCollision(current_block.current_squares, DOWN, board_squares)
 		&& !CheckCollision(current_block.current_squares, LEFT, board_squares)
 		&& !CheckCollision(current_block.current_squares, RIGHT, board_squares))
 	{
 		Rotate(board_squares);
+
+		time_updated = game_timer.GetTimeSeconds();
 	}
 
 	if (current_state[SDL_SCANCODE_DOWN])
@@ -224,7 +254,7 @@ void BlockControl::MoveBlock(std::vector<Square> board_squares)
 	if (!current_state[SDL_SCANCODE_DOWN])
 	{
 
-		speed = 3;
+		speed = velocity * frame_time;
 
 	}
 

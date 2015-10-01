@@ -1,10 +1,18 @@
 
 
-#include "constants.h"
-
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
 
+
+#include <SDL.h>
+#include <SDL_image.h>
+
+
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <memory>
 
 
 struct Point
@@ -38,7 +46,7 @@ struct Line
 struct Square
 {
 
-	SDL_Texture *tex;
+	std::shared_ptr<SDL_Texture> tex;
 
 
 	int x;
@@ -79,7 +87,7 @@ struct Block
 	int y;
 
 
-	SDL_Texture *colour;
+	std::shared_ptr<SDL_Texture> colour;
 
 
 	std::vector<Square> block_squares;
@@ -103,6 +111,9 @@ struct Block
 	Block(SDL_Renderer *ren, std::string colour_filename,
 		std::string block_filename, std::string rotate_one,
 		std::string rotate_two, std::string rotate_three);
+
+
+	Block(const Block &b);
 
 
 	void SetCurrentSquares(std::vector<Square> squares);

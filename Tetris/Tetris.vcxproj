@@ -76,13 +76,14 @@
     <ClCompile Include="board.cpp" />
     <ClCompile Include="core.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="timer.cpp" />
     <ClCompile Include="utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="block.h" />
     <ClInclude Include="board.h" />
-    <ClInclude Include="constants.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="timer.h" />
     <ClInclude Include="utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

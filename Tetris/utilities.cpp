@@ -21,14 +21,14 @@ Line::Line(int ax, int ay, int bx, int by)
 
 
 Square::Square(int pos_x, int pos_y, SDL_Texture *tex,
-	Line t, Line d, Line l, Line r)
+	Line t, Line d, Line l, Line r) : tex(tex, SDL_DestroyTexture)
 {
 
 	x = pos_x;
 
 	y = pos_y;
 
-	this->tex = tex;
+	// this->tex = tex;
 
 	top = t;
 
@@ -75,15 +75,14 @@ void Square::Update(int x, int y)
 
 
 
-Block::Block(){}
+Block::Block() : colour(nullptr, SDL_DestroyTexture) {}
 
 
 Block::Block(SDL_Renderer *ren, std::string colour_filename,
 	std::string block_filename, std::string rotate_one,
-	std::string rotate_two, std::string rotate_three)
+	std::string rotate_two, std::string rotate_three) :
+	colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
 {
-
-	colour = IMG_LoadTexture(ren, colour_filename.c_str());
 
 	block_squares = ParseBlockFile(ren, block_filename);
 
@@ -95,6 +94,25 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 
 }
 
+
+Block::Block(const Block &b) : colour(b.colour)
+{
+
+	x = b.x;
+
+	y = b.y;
+
+	block_squares = b.block_squares;
+
+	block_squares_r = b.block_squares_r;
+
+	block_squares_r2 = b.block_squares_r2;
+
+	block_squares_r3 = b.block_squares_r3;
+
+	current_squares = b.current_squares;
+
+}
 
 
 void Block::SetCurrentSquares(std::vector<Square> squares)
@@ -111,7 +129,7 @@ std::vector<Square> Block::ParseBlockFile(SDL_Renderer *ren, std::string block_f
 
 	std::vector<Square> temp;
 
-	int block[4][4];
+	//int block[4][4];
 	
 	std::ifstream my_stream(block_filename);
 
@@ -139,9 +157,9 @@ std::vector<Square> Block::ParseBlockFile(SDL_Renderer *ren, std::string block_f
 				dest.x = x * 32 + 192;
 				dest.y = i * 32 - 128;
 
-				SDL_QueryTexture(colour, NULL, NULL, &dest.w, &dest.h);
+				SDL_QueryTexture(colour.get(), NULL, NULL, &dest.w, &dest.h);
 
-				temp.push_back(Square(dest.x, dest.y, colour, 
+				temp.push_back(Square(dest.x, dest.y, colour.get(), 
 					Line(dest.x, dest.y, dest.x + dest.w, dest.y),
 					Line(dest.x, dest.y + dest.h, dest.x + dest.w, dest.y + dest.h),
 					Line(dest.x, dest.y, dest.x, dest.y + dest.h),
@@ -159,35 +177,35 @@ std::vector<Square> Block::ParseBlockFile(SDL_Renderer *ren, std::string block_f
 
 void Block::UpdateSquares(int x, int y)
 {
-	for (int i = 0; i < current_squares.size(); ++i)
+	for (unsigned int i = 0; i < current_squares.size(); ++i)
 	{
 
 		current_squares[i].Update(x, y);
 
 	}
 
-	for (int i = 0; i < block_squares.size(); ++i)
+	for (unsigned int i = 0; i < block_squares.size(); ++i)
 	{
 
 		block_squares[i].Update(x, y);
 
 	}
 
-	for (int i = 0; i < block_squares_r.size(); ++i)
+	for (unsigned int i = 0; i < block_squares_r.size(); ++i)
 	{
 
 		block_squares_r[i].Update(x, y);
 
 	}
 
-	for (int i = 0; i < block_squares_r2.size(); ++i)
+	for (unsigned int i = 0; i < block_squares_r2.size(); ++i)
 	{
 
 		block_squares_r2[i].Update(x, y);
 
 	}
 
-	for (int i = 0; i < block_squares_r3.size(); ++i)
+	for (unsigned int i = 0; i < block_squares_r3.size(); ++i)
 	{
 
 		block_squares_r3[i].Update(x, y);
@@ -201,7 +219,7 @@ void Block::UpdateSquares(int x, int y)
 std::vector<Square> Block::ReturnFlip(std::vector<Square> squares, bool hv)
 {
 	
-	for (int i = 0; i < squares.size(); ++i)
+	for (unsigned int i = 0; i < squares.size(); ++i)
 	{
 		if (!hv)
 		{
@@ -290,7 +308,7 @@ void Utilities::DrawLines(SDL_Renderer *ren, std::vector<Line> lines)
 
 	SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
 
-	for (int i = 0; i < lines.size(); ++i)
+	for (unsigned int i = 0; i < lines.size(); ++i)
 	{
 
 		SDL_RenderDrawLine(ren, lines[i].a.x, lines[i].a.y,

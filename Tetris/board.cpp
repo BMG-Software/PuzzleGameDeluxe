@@ -7,14 +7,14 @@ Board::Board(SDL_Renderer *ren)
 {
 
 	// Create a base line
-	for (int i = 0; i < WIN_WIDTH; i += 32)
+	for (int i = 0; i < 600; i += 32)
 	{
 
-		board_squares.push_back(Square(i, WIN_HEIGHT, nullptr,
-			Line(i, WIN_HEIGHT, i + 32, WIN_HEIGHT),
-			Line(i, WIN_HEIGHT + 32, i + 32, WIN_HEIGHT + 32),
-			Line(i, WIN_HEIGHT, i, WIN_HEIGHT + 32),
-			Line(i + 32, WIN_HEIGHT, i + 32, WIN_HEIGHT + 32)));
+		board_squares.push_back(Square(i, 800, nullptr,
+			Line(i, 800, i + 32, 800),
+			Line(i, 800 + 32, i + 32, 800 + 32),
+			Line(i, 800, i, 800 + 32),
+			Line(i + 32, 800, i + 32, 800 + 32)));
 	
 	}
 	
@@ -24,10 +24,10 @@ Board::Board(SDL_Renderer *ren)
 bool Board::DrawBoardBlocks(SDL_Renderer *ren)
 {
 
-	for (int i = 0; i < board_squares.size(); ++i)
+	for (unsigned int i = 0; i < board_squares.size(); ++i)
 	{
 
-		Utilities::RenderTexture(ren, board_squares[i].tex,
+		Utilities::RenderTexture(ren, board_squares[i].tex.get(),
 			board_squares[i].x, board_squares[i].y);
 
 	}
@@ -41,7 +41,7 @@ bool Board::DrawBoardBlocks(SDL_Renderer *ren)
 void Board::AddToBoard(Block block, int &score)
 {
 
-	for (int i = 0; i < block.current_squares.size(); ++i)
+	for (unsigned int i = 0; i < block.current_squares.size(); ++i)
 	{
 
 		board_squares.push_back(block.current_squares[i]);
@@ -61,16 +61,16 @@ void Board::CheckForLine(int &score)
 	int cascade = 0;
 	int amnt_destroyed = 0;
 
-	for (int i = WIN_HEIGHT; i > 0; i -= 32)
+	for (int i = 800; i > 0; i -= 32)
 	{
 		int count = 0;
 
 		std::vector<Square> squares_to_delete;
 
-		for (int x = 0; x < board_squares.size(); ++x)
+		for (unsigned int x = 0; x < board_squares.size(); ++x)
 		{
 
-			if (board_squares[x].y == i && board_squares[x].y + 32 <= WIN_HEIGHT)
+			if (board_squares[x].y == i && board_squares[x].y + 32 <= 800)
 			{
 				if (cascade > 0)
 				{
@@ -81,7 +81,7 @@ void Board::CheckForLine(int &score)
 
 				squares_to_delete.push_back(board_squares[x]);
 
-				if (count == WIN_WIDTH)
+				if (count == 480)
 				{
 					EraseDuplicates(squares_to_delete, board_squares);
 					++amnt_destroyed;
@@ -102,7 +102,7 @@ void Board::CheckForLine(int &score)
 bool Board::CheckForFail()
 {
 
-	for (int i = 0; i < board_squares.size(); ++i)
+	for (unsigned int i = 0; i < board_squares.size(); ++i)
 	{
 
 		if (board_squares[i].top.a.y <= 0)
@@ -131,10 +131,10 @@ void Board::EraseDuplicates(std::vector<Square> to_remove,
 
 		deletions = 0;
 
-		for (int i = 0; i < full_vector.size(); ++i)
+		for (unsigned int i = 0; i < full_vector.size(); ++i)
 		{
 
-			for (int x = 0; x < to_remove.size(); ++x)
+			for (unsigned int x = 0; x < to_remove.size(); ++x)
 			{
 
 				if (CompareSquares(full_vector[i], to_remove[x]))

@@ -1,9 +1,17 @@
 
-#include "utilities.h"
-#include "constants.h"
 
 #ifndef BOARD_H_
 #define BOARD_H_
+
+
+#include <SDL.h>
+#include <SDL_image.h>
+
+
+#include <vector>
+
+
+#include "utilities.h"
 
 
 class Board

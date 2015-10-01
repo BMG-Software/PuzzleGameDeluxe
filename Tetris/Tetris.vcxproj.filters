@@ -6,12 +6,13 @@
     <ClCompile Include="block.cpp" />
     <ClCompile Include="board.cpp" />
     <ClCompile Include="utilities.cpp" />
+    <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h" />
     <ClInclude Include="block.h" />
     <ClInclude Include="board.h" />
-    <ClInclude Include="constants.h" />
     <ClInclude Include="utilities.h" />
+    <ClInclude Include="timer.h" />
   </ItemGroup>
 </Project>

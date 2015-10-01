@@ -9,13 +9,12 @@ std::vector<SDL_Rect> Game::number_clips;
 void Game::InitWinAndRen()
 {
 
-	win = SDL_CreateWindow("Tetris", 
-		SDL_WINDOWPOS_CENTERED, 50,
-		WIN_WIDTH, WIN_HEIGHT, SDL_WINDOW_SHOWN);
+	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50,
+		480, 800, SDL_WINDOW_SHOWN));
 
 
-	ren = SDL_CreateRenderer(win, -1, 
-		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	ren.reset(SDL_CreateRenderer(win.get(), -1, SDL_RENDERER_ACCELERATED
+		| SDL_RENDERER_PRESENTVSYNC));
 
 	if (win == nullptr || ren == nullptr)
 	{
@@ -27,12 +26,14 @@ void Game::InitWinAndRen()
 }
 
 
-Game::Game()
+Game::Game() : win(nullptr, SDL_DestroyWindow),
+	ren(nullptr, SDL_DestroyRenderer),
+	numbers(nullptr, SDL_DestroyTexture)
 {
 
 	InitWinAndRen();
 
-	numbers = IMG_LoadTexture(ren, "Resources\\numbers.png");
+	numbers.reset(IMG_LoadTexture(ren.get(), "Resources\\numbers.png"));
 	
 	for (int i = 0; i < 320; i += 32)
 	{
@@ -59,7 +60,8 @@ bool Game::EventLoop()
 	while (SDL_PollEvent(&e))
 	{
 
-		if (e.key.keysym.sym == SDLK_ESCAPE)
+		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE
+			|| e.type == SDL_QUIT)
 		{
 
 			return true;
@@ -83,7 +85,7 @@ void Game::DrawScore()
 	my_stream << score;
 	my_stream >> score_string;
 
-	for (int i = 0; i < score_string.size(); ++i)
+	for (unsigned int i = 0; i < score_string.size(); ++i)
 	{
 
 		PrintScore(score_string[i], number_clips[i]);
@@ -97,50 +99,43 @@ void Game::DrawScore()
 
 void Game::PrintScore(char number, SDL_Rect location)
 {
+	
+	std::stringstream convertor;
 
-	// Just convert the char into an int...
+	convertor << number;
 
-	if (number == '0') SDL_RenderCopy(ren, numbers,
-		&number_clips[0], &location);
-	else if (number == '1')	SDL_RenderCopy(ren, numbers, 
-		&number_clips[1], &location);
-	else if (number == '2')	SDL_RenderCopy(ren, numbers, 
-		&number_clips[2], &location);
-	else if (number == '3')	SDL_RenderCopy(ren, numbers,
-		&number_clips[3], &location);
-	else if (number == '4')	SDL_RenderCopy(ren, numbers,
-		&number_clips[4], &location);
-	else if (number == '5')	SDL_RenderCopy(ren, numbers, 
-		&number_clips[5], &location);
-	else if (number == '6')	SDL_RenderCopy(ren, numbers,
-		&number_clips[6], &location);
-	else if (number == '7')	SDL_RenderCopy(ren, numbers, 
-		&number_clips[7], &location);
-	else if (number == '8') SDL_RenderCopy(ren, numbers, 
-		&number_clips[8], &location);
-	else if (number == '9')	SDL_RenderCopy(ren, numbers, 
-		&number_clips[9], &location);
+	int my_num;
 
+	convertor >> my_num;
+
+	SDL_RenderCopy(ren.get(), numbers.get(), &number_clips[my_num], &location);
+	
 }
 
 
 void Game::Run()
 {
 
-	BlockControl controller(ren);
+	BlockControl controller(ren.get());
 
-	Board game_board(ren);
+	Board game_board(ren.get());
+
+	float frame_time = 0.0;
 
 	while (!EventLoop())
 	{
 
-		SDL_SetRenderDrawColor(ren, 127, 127, 127, 255);
+		frame_timer.StartTimer();
+
+		SDL_SetRenderDrawColor(ren.get(), 127, 127, 127, 255);
 		
-		SDL_RenderClear(ren);
+		SDL_RenderClear(ren.get());
 		
-		controller.MoveBlock(game_board.board_squares);
+		controller.MoveBlock(game_board.board_squares, frame_time);
 		
-		SDL_Delay(0100);
+		// Game speed should not be tied to frame rate.
+
+		SDL_Delay(0017); // aim for 60 fps
 		
 		if (gen_block)
 		{
@@ -152,7 +147,7 @@ void Game::Run()
 		}
 
 
-		if (controller.DrawBlock(ren, game_board.board_squares))
+		if (controller.DrawBlock(ren.get(), game_board.board_squares))
 		{
 
 			game_board.AddToBoard(controller.GetCurrentBlock(), score);
@@ -161,7 +156,7 @@ void Game::Run()
 
 		}
 
-		if (game_board.DrawBoardBlocks(ren))
+		if (game_board.DrawBoardBlocks(ren.get()))
 		{
 
 			// Display with true type font
@@ -178,7 +173,11 @@ void Game::Run()
 		
 		DrawScore();
 		
-		SDL_RenderPresent(ren);
+		SDL_RenderPresent(ren.get());
+
+		frame_timer.StopTimer();
+
+		frame_time = frame_timer.GetTimeSeconds();
 
 	}
 
