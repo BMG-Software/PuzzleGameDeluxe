@@ -20,23 +20,21 @@ Line::Line(int ax, int ay, int bx, int by)
 }
 
 
-Square::Square(int pos_x, int pos_y, SDL_Texture *tex,
-	Line t, Line d, Line l, Line r) : tex(tex, SDL_DestroyTexture)
+Square::Square(SDL_Rect rect, SDL_Texture *tex) : 
+    tex(tex, SDL_DestroyTexture)
 {
 
-	x = pos_x;
+	x = rect.x;
 
-	y = pos_y;
+	y = rect.y;
+	
+	top = Line(rect.x, rect.y, rect.x + rect.w, rect.y);
 
-	// this->tex = tex;
+	down = Line(rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h);
 
-	top = t;
+	left = Line(rect.x, rect.y, rect.x, rect.y + rect.h);
 
-	down = d;
-
-	left = l;
-
-	right = r;
+	right = Line(rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h);
 
 }
 
@@ -79,18 +77,14 @@ Block::Block() : colour(nullptr, SDL_DestroyTexture) {}
 
 
 Block::Block(SDL_Renderer *ren, std::string colour_filename,
-	std::string block_filename, std::string rotate_one,
-	std::string rotate_two, std::string rotate_three) :
+	std::array<std::array<int, 4>, 4> block_array) :
 	colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
 {
 
-	block_squares = ParseBlockFile(ren, block_filename);
+	// Block is constructed at default location.
+	ParseBlockArray(ren, NULL, NULL, block_array);
 
-	block_squares_r = ParseBlockFile(ren, rotate_one);
-
-	block_squares_r2 = ParseBlockFile(ren, rotate_two);
-
-	block_squares_r3 = ParseBlockFile(ren, rotate_three);
+	current_dir = UP; // UP is set as the default direction for each block spawned.
 
 }
 
@@ -104,85 +98,59 @@ Block::Block(const Block &b) : colour(b.colour)
 
 	block_squares = b.block_squares;
 
-	block_squares_r = b.block_squares_r;
-
-	block_squares_r2 = b.block_squares_r2;
-
-	block_squares_r3 = b.block_squares_r3;
-
-	current_squares = b.current_squares;
+	current_dir = b.current_dir;
 
 }
 
 
-void Block::SetCurrentSquares(std::vector<Square> squares)
+void Block::ParseBlockArray(SDL_Renderer *ren, int loc_x, int loc_y,
+	std::array<std::array<int, 4>, 4> block_array)
 {
-
-	current_squares = squares;
-
-}
-
-
-
-std::vector<Square> Block::ParseBlockFile(SDL_Renderer *ren, std::string block_filename)
-{
-
-	std::vector<Square> temp;
-
-	//int block[4][4];
-	
-	std::ifstream my_stream(block_filename);
-
-	if (!my_stream.is_open())
-	{
-		std::cout << "Error opening " << block_filename << "\n";
-	}
-
-	std::string block_string;
-
-	while (!my_stream.eof())
-	{
-		std::string temp;
-		my_stream >> temp;
-		block_string += temp;
-	}
+		
+	block_arr = block_array;
 
 	for (int i = 0; i < 4; ++i)
 	{
+
 		for (int x = 0; x < 4; ++x)
 		{
-			if (block_string[x + (i * 4)] == '1')
+
+			if (block_array[i][x] == 1)
 			{
+				
 				SDL_Rect dest;
-				dest.x = x * 32 + 192;
-				dest.y = i * 32 - 128;
+
+				if (loc_x == NULL && loc_y == NULL)
+				{
+					// 192 and 128 are the offsets used to centre the block off screen.
+					// They are only set if a particular location isn't entered into the
+					// function.
+					dest.x = x * 32 + 192;
+					dest.y = i * 32 - 128;
+
+				}
+				else
+				{
+
+					dest.x = loc_x;
+					dest.y = loc_y;
+
+				}
 
 				SDL_QueryTexture(colour.get(), NULL, NULL, &dest.w, &dest.h);
-
-				temp.push_back(Square(dest.x, dest.y, colour.get(), 
-					Line(dest.x, dest.y, dest.x + dest.w, dest.y),
-					Line(dest.x, dest.y + dest.h, dest.x + dest.w, dest.y + dest.h),
-					Line(dest.x, dest.y, dest.x, dest.y + dest.h),
-					Line(dest.x + dest.w, dest.y, dest.x + dest.w, dest.y + dest.h)));
+				
+				block_squares.push_back(Square(dest, colour.get()));
 				
 			}
 
 		}
 
 	}
-
-	return temp;
-
+	
 }
 
 void Block::UpdateSquares(int x, int y)
 {
-	for (unsigned int i = 0; i < current_squares.size(); ++i)
-	{
-
-		current_squares[i].Update(x, y);
-
-	}
 
 	for (unsigned int i = 0; i < block_squares.size(); ++i)
 	{
@@ -191,82 +159,29 @@ void Block::UpdateSquares(int x, int y)
 
 	}
 
-	for (unsigned int i = 0; i < block_squares_r.size(); ++i)
-	{
-
-		block_squares_r[i].Update(x, y);
-
-	}
-
-	for (unsigned int i = 0; i < block_squares_r2.size(); ++i)
-	{
-
-		block_squares_r2[i].Update(x, y);
-
-	}
-
-	for (unsigned int i = 0; i < block_squares_r3.size(); ++i)
-	{
-
-		block_squares_r3[i].Update(x, y);
-
-	}
-
 }
 
 
-
-std::vector<Square> Block::ReturnFlip(std::vector<Square> squares, bool hv)
+void Block::Rotate()
 {
-	
-	for (unsigned int i = 0; i < squares.size(); ++i)
+
+	// TODO: Must figure out a rotation algorithm.
+
+	std::array<std::array<int, 4>, 4> rotated_arr;
+
+	for (int i = 0; i < 4; ++i)
 	{
-		if (!hv)
+
+		for (int x = 0; x < 4; ++x)
 		{
-			if (squares[i].x == x)
-			{
-				squares[i].x = x + 96;
-			}
-			if (squares[i].x == x + 32)
-			{
-				squares[i].x = x + 64;
-			}
-			if (squares[i].x ==  x + 64)
-			{
-				squares[i].x =  x + 32;
-			}
-			if (squares[i].x == x + 96)
-			{
-				squares[i].x = x;
-			}
-		}
-		else
-		{
-			if (squares[i].y == y)
-			{
-				squares[i].y = y + 96;
-			}
-			if (squares[i].y == y + 32)
-			{
-				squares[i].y = y + 64;
-			}
-			if (squares[i].y == y + 64)
-			{
-				squares[i].y = y + 32;
-			}
-			if (squares[i].y == y + 96)
-			{
-				squares[i].y = y;
-			}
+
+
 
 		}
-
 
 	}
-	return squares;
 
 }
-
 
 
 bool Utilities::CompareLines(Line one, Line two)
@@ -282,7 +197,6 @@ bool Utilities::CompareLines(Line one, Line two)
 	else return false;
 
 }
-
 
 
 void Utilities::RenderTexture(SDL_Renderer *ren, 
@@ -317,3 +231,4 @@ void Utilities::DrawLines(SDL_Renderer *ren, std::vector<Line> lines)
 	}
 
 }
+

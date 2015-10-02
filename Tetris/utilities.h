@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <array>
 
 
 struct Point
@@ -43,8 +44,12 @@ struct Line
 };
 
 
-struct Square
+class Square
 {
+
+
+public:
+
 
 	std::shared_ptr<SDL_Texture> tex;
 
@@ -55,6 +60,7 @@ struct Square
 	int y;
 
 
+	// Each square has lines that are used to check collision.
 	Line top;
 
 	
@@ -67,8 +73,9 @@ struct Square
 	Line right;
 
 
-	Square(int pos_x, int pos_y, SDL_Texture *tex, 
-		Line t, Line d, Line l, Line r);
+	// Needs updating. Lines can be figured out from the x and y positions.
+	Square(SDL_Rect rect, SDL_Texture *tex/*, 
+		Line t, Line d, Line l, Line r*/);
 
 
 	void Update(int x, int y);
@@ -78,9 +85,16 @@ struct Square
 
 
 
-struct Block
+class Block
 {
 
+
+public:
+
+
+
+	// Stores the x and y locations of the top 
+	// left corner of the current block.
 	int x;
 
 
@@ -90,42 +104,46 @@ struct Block
 	std::shared_ptr<SDL_Texture> colour;
 
 
+	// Each block saves a copy of it's own array which
+	// is later used for rotations.
+	std::array<std::array<int, 4>, 4> block_arr;
+
+
+	// Stores all of the squares that make up the current block.
 	std::vector<Square> block_squares;
 
 
-	std::vector<Square> block_squares_r;
+	static enum directions { UP, DOWN, LEFT, RIGHT };
 
 
-	std::vector<Square> block_squares_r2;
-
-
-	std::vector<Square> block_squares_r3;
-
-
-	std::vector<Square> current_squares;
-
+	// Stores the current direction of the block.
+	int current_dir;
+	
 
 	Block();
 
 
 	Block(SDL_Renderer *ren, std::string colour_filename,
-		std::string block_filename, std::string rotate_one,
-		std::string rotate_two, std::string rotate_three);
+		std::array<std::array<int, 4>, 4> block_array);
 
 
 	Block(const Block &b);
 
 
-	void SetCurrentSquares(std::vector<Square> squares);
+	// Updates block squares based on the given array.
+	// Sets block to default position if loc_x and loc_y are
+	// set to NULL.
+	void ParseBlockArray(SDL_Renderer *ren, int loc_x, int loc_y,
+		std::array<std::array<int, 4>, 4> block_array);
 
 
-	std::vector<Square> ParseBlockFile(SDL_Renderer *ren, std::string block_filename);
-
-
+	// Updates the location of each of the squares 
+	// by the x and y amounts passed in.
 	void UpdateSquares(int x, int y);
 
 
-	std::vector<Square> ReturnFlip(std::vector<Square> squares, bool hv);
+	void Rotate();
+
 
 };
 

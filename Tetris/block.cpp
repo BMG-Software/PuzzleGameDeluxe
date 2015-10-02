@@ -3,28 +3,80 @@
 #include "block.h"
 
 
+std::array < std::array<int, 4>, 4 > BlockControl::i_block = 
+{
+	std::array<int, 4> { { 0, 1, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 0, 0 } }
+};
+
+
+std::array < std::array<int, 4>, 4 > BlockControl::j_block =
+{
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 0, 0 } },
+	std::array<int, 4> { { 1, 1, 0, 0 } }
+};
+
+
+std::array < std::array<int, 4>, 4 > BlockControl::l_block =
+{
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 1, 0 } }
+};
+
+
+std::array < std::array<int, 4>, 4 > BlockControl::s_block =
+{
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 0, 1, 1 } },
+	std::array<int, 4> { { 0, 1, 1, 0 } }
+};
+
+
+std::array < std::array<int, 4>, 4 > BlockControl::t_block =
+{
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 1, 1 } },
+	std::array<int, 4> { { 0, 0, 1, 0 } }
+};
+
+
+std::array < std::array<int, 4>, 4 > BlockControl::z_block =
+{
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 1, 1, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 1, 0 } }
+};
+
+
+std::array < std::array<int, 4>, 4 > BlockControl::o_block =
+{
+	std::array<int, 4> { { 0, 0, 0, 0 } },
+	std::array<int, 4> { { 0, 1, 1, 0 } },
+	std::array<int, 4> { { 0, 1, 1, 0 } },
+	std::array<int, 4> { { 0, 0, 0, 0 } }
+};
+
+
 BlockControl::BlockControl(SDL_Renderer *ren)
 	: tex(nullptr, SDL_DestroyTexture)
 {
 
-	// There is definitly a better solution than loading tons of different text files.
-
-	// blocks should be small, hardcoded 2D arrays and should be rotated by switching the arrays around
-
-	blocks.push_back(Block(ren, "Resources\\green.png", "Resources\\i-block.txt", "Resources\\i-block-r.txt",
-		"Resources\\i-block.txt", "Resources\\i-block-r.txt"));
-	blocks.push_back(Block(ren, "Resources\\red.png", "Resources\\j-block.txt", "Resources\\j-block-r.txt",
-		"Resources\\j-block-r2.txt", "Resources\\j-block-r3.txt"));
-	blocks.push_back(Block(ren, "Resources\\blue.png", "Resources\\l-block.txt", "Resources\\l-block-r.txt",
-		"Resources\\l-block-r2.txt", "Resources\\l-block-r3.txt"));
-	blocks.push_back(Block(ren, "Resources\\orange.png", "Resources\\o-block.txt", "Resources\\o-block.txt",
-		"Resources\\o-block.txt", "Resources\\o-block.txt"));
-	blocks.push_back(Block(ren, "Resources\\purple.png", "Resources\\s-block.txt", "Resources\\s-block-r.txt",
-		"Resources\\s-block.txt", "Resources\\s-block-r.txt"));
-	blocks.push_back(Block(ren, "Resources\\cyan.png", "Resources\\t-block.txt", "Resources\\t-block-r.txt",
-		"Resources\\t-block-r2.txt", "Resources\\t-block-r3.txt"));
-	blocks.push_back(Block(ren, "Resources\\yellow.png", "Resources\\z-block.txt", "Resources\\z-block-r.txt",
-		"Resources\\z-block.txt", "Resources\\z-block-r.txt"));
+	blocks.push_back(Block(ren, "Resources\\green.png", i_block));
+	blocks.push_back(Block(ren, "Resources\\red.png", j_block));
+	blocks.push_back(Block(ren, "Resources\\blue.png", l_block));
+	blocks.push_back(Block(ren, "Resources\\orange.png", o_block));
+	blocks.push_back(Block(ren, "Resources\\purple.png", s_block));
+	blocks.push_back(Block(ren, "Resources\\cyan.png", t_block));
+	blocks.push_back(Block(ren, "Resources\\yellow.png", z_block));
 
 	speed = 0;
 
@@ -38,8 +90,6 @@ BlockControl::BlockControl(SDL_Renderer *ren)
 BlockControl::BlockControl(const BlockControl &b) :
     tex(b.tex)
 {
-
-	frame_num = b.frame_num;
 
 	speed = b.speed;
 
@@ -77,7 +127,7 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 		for (unsigned int x = 0; x < board_squares.size(); ++x)
 		{
 			
-			if (direction == UP)
+			if (direction == Block::UP)
 			{
 
 				if (Utilities::CompareLines(block_squares[i].top,
@@ -90,23 +140,20 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 
 			}
 
-			if (direction == DOWN)
+			if (direction == Block::DOWN)
 			{
 
 				if (Utilities::CompareLines(block_squares[i].down,
 					board_squares[x].top))
 				{
 
-					std::cout << block_squares[i].down.a.y << "\n" << block_squares[i].down.b.y
-						<< "\n" << board_squares[x].top.a.y << "\n" << board_squares[x].top.b.y << "\n.";
-					system("pause");
 					return true;
 
 				}
 
 			}
 
-			if (direction == LEFT)
+			if (direction == Block::LEFT)
 			{
 
 				if (Utilities::CompareLines(block_squares[i].left,
@@ -125,7 +172,7 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 
 			}
 
-			if (direction == RIGHT)
+			if (direction == Block::RIGHT)
 			{
 
 				if (Utilities::CompareLines(block_squares[i].right,
@@ -173,9 +220,7 @@ void BlockControl::GenerateRandomBlock()
 {
 	int i = rand() % 7;
 	current_block = blocks[i];
-	current_block.SetCurrentSquares(current_block.block_squares);
-
-	frame_num = 1;
+	
 
 }
 
@@ -203,7 +248,7 @@ bool BlockControl::UpdatePosition(std::vector<Square> board_squares)
 	for (int i = 0; i < speed; ++i)
 	{
 
-		if (!CheckCollision(current_block.current_squares, DOWN, board_squares))
+		if (!CheckCollision(current_block.block_squares, Block::DOWN, board_squares))
 		{
 
 			current_block.UpdateSquares(0, 1);
@@ -219,24 +264,26 @@ bool BlockControl::UpdatePosition(std::vector<Square> board_squares)
 
 	}
 
+	return false;
+
 }
 
 
 void BlockControl::RenderBlock(SDL_Renderer *ren)
 {
 	
-	for (unsigned int i = 0; i < current_block.current_squares.size(); ++i)
+	for (unsigned int i = 0; i < current_block.block_squares.size(); ++i)
 	{
 
-		Utilities::RenderTexture(ren, current_block.current_squares[i].tex.get(),
-			current_block.current_squares[i].x, current_block.current_squares[i].y);
+		Utilities::RenderTexture(ren, current_block.block_squares[i].tex.get(),
+			current_block.block_squares[i].x, current_block.block_squares[i].y);
 
 		std::vector<Line> my_lines;
 
-		my_lines.push_back(current_block.current_squares[i].top);
-		my_lines.push_back(current_block.current_squares[i].down);
-		my_lines.push_back(current_block.current_squares[i].left);
-		my_lines.push_back(current_block.current_squares[i].right);
+		my_lines.push_back(current_block.block_squares[i].top);
+		my_lines.push_back(current_block.block_squares[i].down);
+		my_lines.push_back(current_block.block_squares[i].left);
+		my_lines.push_back(current_block.block_squares[i].right);
 
 		Utilities::DrawLines(ren, my_lines);
 	}
@@ -246,8 +293,6 @@ void BlockControl::RenderBlock(SDL_Renderer *ren)
 
 void BlockControl::MoveBlock(std::vector<Square> board_squares, float frame_time)
 {
-
-	// Refactor
 
 	const Uint8 *current_state = SDL_GetKeyboardState(NULL);
 
@@ -268,13 +313,13 @@ void BlockControl::MoveBlock(std::vector<Square> board_squares, float frame_time
 void BlockControl::HandleUp(const Uint8* state, std::vector<Square> board_squares)
 {
 
-	// Check collision based on the direction the block will be rotating to
-
+	// Before attempting to rotate, we check for collision in any direction 
+	// for the block in it's current state.
 	if (state[SDL_SCANCODE_UP]
-		&& !CheckCollision(current_block.current_squares, UP, board_squares)
-		&& !CheckCollision(current_block.current_squares, DOWN, board_squares)
-		&& !CheckCollision(current_block.current_squares, LEFT, board_squares)
-		&& !CheckCollision(current_block.current_squares, RIGHT, board_squares))
+		&& !CheckCollision(current_block.block_squares, Block::UP, board_squares)
+		&& !CheckCollision(current_block.block_squares, Block::DOWN, board_squares)
+		&& !CheckCollision(current_block.block_squares, Block::LEFT, board_squares)
+		&& !CheckCollision(current_block.block_squares, Block::RIGHT, board_squares))
 	{
 		Rotate(board_squares);
 
@@ -288,7 +333,7 @@ void BlockControl::HandleLeftAndRight(const Uint8 *state, std::vector<Square> bo
 {
 
 	if (state[SDL_SCANCODE_RIGHT]
-		&& !CheckCollision(current_block.current_squares, RIGHT, board_squares))
+		&& !CheckCollision(current_block.block_squares, Block::RIGHT, board_squares))
 	{
 		current_block.UpdateSquares(32, 0);
 
@@ -296,7 +341,7 @@ void BlockControl::HandleLeftAndRight(const Uint8 *state, std::vector<Square> bo
 	}
 
 	if (state[SDL_SCANCODE_LEFT]
-		&& !CheckCollision(current_block.current_squares, LEFT, board_squares))
+		&& !CheckCollision(current_block.block_squares, Block::LEFT, board_squares))
 	{
 		current_block.UpdateSquares(-32, 0);
 
@@ -311,20 +356,15 @@ void BlockControl::HandleDown(const Uint8 *state, float frame_time)
 
 	if (state[SDL_SCANCODE_DOWN])
 	{
-
-		if (speed < 10)
-		{
-			++speed;
-		}
+		// TODO: Speed increase needs fixing..
+		speed = int((velocity * 2) * frame_time);
 
 	}
 
 	if (!state[SDL_SCANCODE_DOWN])
 	{
 
-		speed = velocity * frame_time;
-
-		std::cout << "Moving down at: " << speed << ".\n";
+		speed = int(velocity * frame_time);
 
 	}
 
@@ -342,55 +382,46 @@ Block BlockControl::GetCurrentBlock()
 void BlockControl::Rotate(std::vector<Square> board_squares)
 {
 
-	// AHH! My eyes!!
-
-	++frame_num;
-
-	if (frame_num == 1 && !CheckCollision(current_block.block_squares, UP, board_squares)
-		&& !CheckCollision(current_block.block_squares, DOWN, board_squares) &&
-		!CheckCollision(current_block.block_squares, RIGHT, board_squares) &&
-		!CheckCollision(current_block.block_squares, LEFT, board_squares))
+	switch (current_block.current_dir)
 	{
 
-		current_block.SetCurrentSquares(current_block.block_squares);
+	case Block::UP:
+
+		// set to right
+		// check collision
+		// if collides reset
+		// else update current_dir
+		return;
+
+	case Block::DOWN:
+
+		// set to left
+		// check collision
+		// if collides reset
+		// else update current_dir
+		return;
+
+	case Block::LEFT:
+
+		// set to up
+		// check collision
+		// if collides reset
+		// else update current_dir
+		return;
+
+	case Block::RIGHT:
+
+		// set to down
+		// check collision
+		// if collides reset
+		// else update current_dir
+		return;
+
+	default:
+
+		std::cout << "Block is not set to a valid direction.\n";
 
 	}
-	else if (frame_num == 2 && !CheckCollision(current_block.block_squares_r, UP, board_squares)
-		&& !CheckCollision(current_block.block_squares_r, DOWN, board_squares) &&
-		!CheckCollision(current_block.block_squares_r, RIGHT, board_squares) &&
-		!CheckCollision(current_block.block_squares_r, LEFT, board_squares))
-	{
-
-		current_block.SetCurrentSquares(current_block.block_squares_r);
-
-	}
-	else if (frame_num == 3 && !CheckCollision(current_block.block_squares_r2, UP, board_squares)
-		&& !CheckCollision(current_block.block_squares_r2, DOWN, board_squares) &&
-		!CheckCollision(current_block.block_squares_r2, RIGHT, board_squares) &&
-		!CheckCollision(current_block.block_squares_r2, LEFT, board_squares))
-	{
-
-		current_block.SetCurrentSquares(current_block.block_squares_r2);
-
-	}
-	else if (frame_num == 4 && !CheckCollision(current_block.block_squares_r3, UP, board_squares)
-		&& !CheckCollision(current_block.block_squares_r3, DOWN, board_squares) &&
-		!CheckCollision(current_block.block_squares_r3, RIGHT, board_squares) &&
-		!CheckCollision(current_block.block_squares_r3, LEFT, board_squares))
-	{
-
-		current_block.SetCurrentSquares(current_block.block_squares_r3);
-
-	}
-	else
-	{
-
-		frame_num = 0;
-
-	}
-
-
+	
 }
-
-
 

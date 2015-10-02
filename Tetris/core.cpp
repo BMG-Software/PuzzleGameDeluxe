@@ -133,8 +133,6 @@ void Game::Run()
 		
 		controller.MoveBlock(game_board.board_squares, frame_time);
 		
-		// Game speed should not be tied to frame rate.
-
 		SDL_Delay(0017); // aim for 60 fps
 		
 		if (gen_block)

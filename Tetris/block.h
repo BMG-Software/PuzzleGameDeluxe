@@ -11,6 +11,7 @@
 
 
 #include <memory>
+#include <array>
 
 
 #include "board.h"
@@ -24,7 +25,27 @@ class BlockControl
 
 private:
 
-	enum direction { UP, DOWN, LEFT, RIGHT };
+
+	// Each array stores the pattern for loading a block
+	static std::array<std::array<int, 4>, 4> i_block;
+
+
+	static std::array<std::array<int, 4>, 4> j_block;
+
+
+	static std::array<std::array<int, 4>, 4> l_block;
+
+
+	static std::array<std::array<int, 4>, 4> s_block;
+
+
+	static std::array<std::array<int, 4>, 4> t_block;
+
+
+	static std::array<std::array<int, 4>, 4> z_block;
+
+
+	static std::array<std::array<int, 4>, 4> o_block;
 
 
 	std::shared_ptr<SDL_Texture> tex;
@@ -91,10 +112,10 @@ public:
 	void GenerateRandomBlock(); 
 
 
-	int frame_num;
-
-
 	void Rotate(std::vector<Square> board_squares);
+
+
+
 
 };
 

@@ -6,16 +6,22 @@
 Board::Board(SDL_Renderer *ren)
 {
 
+	SDL_Rect rect;
+
+	rect.w = 32;
+
+	rect.h = 32;
+
 	// Create a base line
 	for (int i = 0; i < 480; i += 32)
 	{
 
-		board_squares.push_back(Square(i, 800, nullptr,
-			Line(i, 800, i + 32, 800),
-			Line(i, 800 + 32, i + 32, 800 + 32),
-			Line(i, 800, i, 800 + 32),
-			Line(i + 32, 800, i + 32, 800 + 32)));
-	
+		rect.y = 800;
+   
+		rect.x = i;
+
+		board_squares.push_back(Square(rect, nullptr));
+	    
 	}
 
 }
@@ -41,10 +47,10 @@ bool Board::DrawBoardBlocks(SDL_Renderer *ren)
 void Board::AddToBoard(Block block, int &score)
 {
 
-	for (unsigned int i = 0; i < block.current_squares.size(); ++i)
+	for (unsigned int i = 0; i < block.block_squares.size(); ++i)
 	{
 
-		board_squares.push_back(block.current_squares[i]);
+		board_squares.push_back(block.block_squares[i]);
 
 	}
 
@@ -104,7 +110,7 @@ bool Board::CheckForFail()
 
 	for (unsigned int i = 0; i < board_squares.size(); ++i)
 	{
-		/*
+		/* TODO: Must re-implement!!
 		if (board_squares[i].top.a.y <= 0)
 		{
 
