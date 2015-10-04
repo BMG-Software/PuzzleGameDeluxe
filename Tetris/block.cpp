@@ -245,7 +245,7 @@ bool BlockControl::DrawBlock(SDL_Renderer *ren, std::vector<Square> board_square
 bool BlockControl::UpdatePosition(std::vector<Square> board_squares)
 {
 
-	for (int i = 0; i < speed; ++i)
+	for (int i = 0; i < speed; ++i) // needs fixing
 	{
 
 		if (!CheckCollision(current_block.block_squares, Block::DOWN, board_squares))
@@ -291,26 +291,30 @@ void BlockControl::RenderBlock(SDL_Renderer *ren)
 }
 
 
-void BlockControl::MoveBlock(std::vector<Square> board_squares, float frame_time)
+void BlockControl::MoveBlock(SDL_Renderer* ren, 
+	std::vector<Square> board_squares, float frame_time)
 {
 
 	const Uint8 *current_state = SDL_GetKeyboardState(NULL);
 
+	// Limit the speed at which the block can move left and
+	// right as well as rotation.
 	if (game_timer.GetTimeSeconds() > time_updated + 0.1)
 	{
 		
 		HandleLeftAndRight(current_state, board_squares);
-
-		HandleUp(current_state, board_squares);
+				
+		HandleUp(ren, current_state, board_squares);
 
 	}
 
 	HandleDown(current_state, frame_time);
-
+	
 }
 
 
-void BlockControl::HandleUp(const Uint8* state, std::vector<Square> board_squares)
+void BlockControl::HandleUp(SDL_Renderer* ren, 
+	const Uint8* state, std::vector<Square> board_squares)
 {
 
 	// Before attempting to rotate, we check for collision in any direction 
@@ -321,7 +325,16 @@ void BlockControl::HandleUp(const Uint8* state, std::vector<Square> board_square
 		&& !CheckCollision(current_block.block_squares, Block::LEFT, board_squares)
 		&& !CheckCollision(current_block.block_squares, Block::RIGHT, board_squares))
 	{
-		Rotate(board_squares);
+
+		//std::cout << "Block position: " << current_block.GetLocX() <<
+			//", " << current_block.GetLocY() << "\n";
+
+		Rotate(ren, board_squares);
+
+		//std::cout << "Block position: " << current_block.GetLocX() <<
+			//", " << current_block.GetLocY() << "\n";
+
+		//system("pause");
 
 		time_updated = game_timer.GetTimeSeconds();
 	}
@@ -379,49 +392,10 @@ Block BlockControl::GetCurrentBlock()
 }
 
 
-void BlockControl::Rotate(std::vector<Square> board_squares)
+void BlockControl::Rotate(SDL_Renderer* ren, std::vector<Square> board_squares)
 {
 
-	switch (current_block.current_dir)
-	{
-
-	case Block::UP:
-
-		// set to right
-		// check collision
-		// if collides reset
-		// else update current_dir
-		return;
-
-	case Block::DOWN:
-
-		// set to left
-		// check collision
-		// if collides reset
-		// else update current_dir
-		return;
-
-	case Block::LEFT:
-
-		// set to up
-		// check collision
-		// if collides reset
-		// else update current_dir
-		return;
-
-	case Block::RIGHT:
-
-		// set to down
-		// check collision
-		// if collides reset
-		// else update current_dir
-		return;
-
-	default:
-
-		std::cout << "Block is not set to a valid direction.\n";
-
-	}
-	
+	current_block.Rotate(ren);
+		
 }
 

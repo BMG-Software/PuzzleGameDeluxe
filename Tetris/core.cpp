@@ -131,7 +131,7 @@ void Game::Run()
 		
 		SDL_RenderClear(ren.get());
 		
-		controller.MoveBlock(game_board.board_squares, frame_time);
+		controller.MoveBlock(ren.get(), game_board.board_squares, frame_time);
 		
 		SDL_Delay(0017); // aim for 60 fps
 		

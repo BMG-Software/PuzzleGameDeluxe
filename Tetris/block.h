@@ -94,13 +94,16 @@ public:
 	void RenderBlock(SDL_Renderer *ren);
 
 
-	void MoveBlock(std::vector<Square> board_squares, float frame_time);
+	void MoveBlock(SDL_Renderer* ren, 
+		std::vector<Square> board_squares, float frame_time);
 
 
-	void HandleUp(const Uint8 *state, std::vector<Square> board_squares);
+	void HandleUp(SDL_Renderer* ren, const Uint8 *state, 
+		std::vector<Square> board_squares);
 
 
-	void HandleLeftAndRight(const Uint8 *state, std::vector<Square> board_squares);
+	void HandleLeftAndRight(const Uint8 *state, 
+		std::vector<Square> board_squares);
 
 
 	void HandleDown(const Uint8 *state, float frame_time);
@@ -112,7 +115,7 @@ public:
 	void GenerateRandomBlock(); 
 
 
-	void Rotate(std::vector<Square> board_squares);
+	void Rotate(SDL_Renderer* ren, std::vector<Square> board_squares);
 
 
 

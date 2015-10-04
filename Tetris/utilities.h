@@ -73,12 +73,16 @@ public:
 	Line right;
 
 
-	// Needs updating. Lines can be figured out from the x and y positions.
-	Square(SDL_Rect rect, SDL_Texture *tex/*, 
-		Line t, Line d, Line l, Line r*/);
+	Square(SDL_Rect rect, SDL_Texture *tex);
 
 
 	void Update(int x, int y);
+
+
+	void CorrectLocation();
+
+
+	void PrintLocation();
 
 
 };
@@ -130,10 +134,13 @@ public:
 	Block(const Block &b);
 
 
+	void Copy2DArray(std::array<std::array<int, 4>, 4> input);
+
+
 	// Updates block squares based on the given array.
 	// Sets block to default position if loc_x and loc_y are
 	// set to NULL.
-	void ParseBlockArray(SDL_Renderer *ren, int loc_x, int loc_y,
+	void ParseBlockArray(SDL_Renderer *ren,
 		std::array<std::array<int, 4>, 4> block_array);
 
 
@@ -142,7 +149,13 @@ public:
 	void UpdateSquares(int x, int y);
 
 
-	void Rotate();
+	void Rotate(SDL_Renderer* ren);
+
+
+	int GetLocX();
+
+
+	int GetLocY();
 
 
 };

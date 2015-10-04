@@ -45,6 +45,7 @@ void Square::Update(int x, int y)
 	this->x += x;
 	this->y += y;
 
+	// PrintLocation();
 
 	top.a.x += x;
 	top.a.y += y;
@@ -72,8 +73,69 @@ void Square::Update(int x, int y)
 }
 
 
+void Square::CorrectLocation()
+{
+
+	//this->x *= -1;
+	this->y *= -1;
+
+
+	//top.a.x *= -1;
+	top.a.y *= -1;
+	//top.b.x *= -1;
+	top.b.y *= -1;
+
+
+	//down.a.x *= -1;
+	down.a.y *= -1;
+	//down.b.x *= -1;
+	down.b.y *= -1;
+
+
+	//right.a.x *= -1;
+	right.a.y *= -1;
+	//right.b.x *= -1;
+	right.b.y *= -1;
+
+
+	//left.a.x *= -1;
+	left.a.y *= -1;
+	//left.b.x *= -1;
+	left.b.y *= -1;
+
+}
+
+
+void Square::PrintLocation()
+{
+
+	std::cout << "Current square location " 
+		<< x << ", " << y << "\n";
+
+}
+
 
 Block::Block() : colour(nullptr, SDL_DestroyTexture) {}
+
+
+void Print2DArray(std::array<std::array<int, 4>, 4> arr)
+{
+
+	for (int i = 0; i < 4; ++i)
+	{
+
+		for (int z = 0; z < 4; ++z)
+		{
+
+			std::cout << arr[i][z] << " ";
+
+		}
+
+		std::cout << "\n";
+
+	}
+
+}
 
 
 Block::Block(SDL_Renderer *ren, std::string colour_filename,
@@ -81,8 +143,23 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 	colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
 {
 
+	// 192 and 128 are the offsets used to centre the block off screen.
+	// They are only set if a particular location isn't entered into the
+	// function
+
+	this->x = 192;
+
+	this->y = -128;
+
 	// Block is constructed at default location.
-	ParseBlockArray(ren, NULL, NULL, block_array);
+	ParseBlockArray(ren, block_array);
+	
+	if (block_arr.empty())
+	{
+
+		std::cout << "The block array has not been copied correctly.\n";
+
+	}
 
 	current_dir = UP; // UP is set as the default direction for each block spawned.
 
@@ -92,9 +169,11 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 Block::Block(const Block &b) : colour(b.colour)
 {
 
-	x = b.x;
+	this->x = b.x;
 
-	y = b.y;
+	this->y = b.y;
+
+	Copy2DArray(b.block_arr);
 
 	block_squares = b.block_squares;
 
@@ -103,11 +182,31 @@ Block::Block(const Block &b) : colour(b.colour)
 }
 
 
-void Block::ParseBlockArray(SDL_Renderer *ren, int loc_x, int loc_y,
+void Block::Copy2DArray(std::array<std::array<int, 4>, 4> input)
+{
+
+	for (int i = 0; i < 4; ++i)
+	{
+
+		for (int x = 0; x < 4; ++x)
+		{
+
+			block_arr[i][x] = input[i][x];
+
+		}
+
+	}
+
+}
+
+
+void Block::ParseBlockArray(SDL_Renderer *ren,
 	std::array<std::array<int, 4>, 4> block_array)
 {
-		
-	block_arr = block_array;
+
+	Copy2DArray(block_array);
+
+	block_squares = std::vector<Square>();
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -119,24 +218,10 @@ void Block::ParseBlockArray(SDL_Renderer *ren, int loc_x, int loc_y,
 			{
 				
 				SDL_Rect dest;
-
-				if (loc_x == NULL && loc_y == NULL)
-				{
-					// 192 and 128 are the offsets used to centre the block off screen.
-					// They are only set if a particular location isn't entered into the
-					// function.
-					dest.x = x * 32 + 192;
-					dest.y = i * 32 - 128;
-
-				}
-				else
-				{
-
-					dest.x = loc_x;
-					dest.y = loc_y;
-
-				}
-
+				
+				dest.x = x * 32 + this->x;
+				dest.y = i * 32 + this->y;
+				
 				SDL_QueryTexture(colour.get(), NULL, NULL, &dest.w, &dest.h);
 				
 				block_squares.push_back(Square(dest, colour.get()));
@@ -149,6 +234,7 @@ void Block::ParseBlockArray(SDL_Renderer *ren, int loc_x, int loc_y,
 	
 }
 
+
 void Block::UpdateSquares(int x, int y)
 {
 
@@ -156,30 +242,80 @@ void Block::UpdateSquares(int x, int y)
 	{
 
 		block_squares[i].Update(x, y);
+	
+	}
+	
+	this->x += x;
+	this->y += y;
+
+}
+
+
+void Block::Rotate(SDL_Renderer* ren)
+{
+
+	// TODO: Must figure out a rotation algorithm.
+
+	// Should cache block_arr locally so that after
+	// collision is checked the block can be reverted back
+	// if necessary.
+
+	std::array<std::array<int, 4>, 4> rotated_arr;
+
+	rotated_arr[0][3] = block_arr[0][0];
+	rotated_arr[1][3] = block_arr[0][1];
+	rotated_arr[2][3] = block_arr[0][2];
+	rotated_arr[3][3] = block_arr[0][3];
+
+	rotated_arr[0][2] = block_arr[1][0];
+	rotated_arr[1][2] = block_arr[1][1];
+	rotated_arr[2][2] = block_arr[1][2];
+	rotated_arr[3][2] = block_arr[1][3];
+
+	rotated_arr[0][1] = block_arr[2][0];
+	rotated_arr[1][1] = block_arr[2][1];
+	rotated_arr[2][1] = block_arr[2][2];
+	rotated_arr[3][1] = block_arr[2][3];
+
+	rotated_arr[0][0] = block_arr[3][0];
+	rotated_arr[1][0] = block_arr[3][1];
+	rotated_arr[2][0] = block_arr[3][2];
+	rotated_arr[3][0] = block_arr[3][3];
+		
+	/*Print2DArray(block_arr);
+
+	std::cout << "\n";
+
+	Print2DArray(rotated_arr);*/
+
+	ParseBlockArray(ren, rotated_arr);
+
+	for (int i = 0; i < block_squares.size(); ++i)
+	{
+
+		block_squares[i].PrintLocation();
+
+		//block_squares[i].CorrectLocation();
+
+		//block_squares[i].PrintLocation();
 
 	}
 
 }
 
 
-void Block::Rotate()
+int Block::GetLocX()
 {
 
-	// TODO: Must figure out a rotation algorithm.
+	return this->x;
 
-	std::array<std::array<int, 4>, 4> rotated_arr;
-
-	for (int i = 0; i < 4; ++i)
-	{
-
-		for (int x = 0; x < 4; ++x)
-		{
+}
 
 
+int Block::GetLocY()
+{
 
-		}
-
-	}
+	return this->y;
 
 }
 
