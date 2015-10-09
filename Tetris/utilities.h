@@ -41,6 +41,9 @@ struct Line
 
 	Line(int ax, int ay, int bx, int by);
 
+
+	void PrintLineInfo();
+
 };
 
 
@@ -79,10 +82,10 @@ public:
 	void Update(int x, int y);
 
 
-	void CorrectLocation();
-
-
 	void PrintLocation();
+
+
+	void PrintSquareInfo();
 
 
 };

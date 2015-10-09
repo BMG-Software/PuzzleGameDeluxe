@@ -160,10 +160,8 @@ void Game::Run()
 			// Display with true type font
 
 			std::cout << " GAME OVER ! \n"; 
-
-			// remove for linux support
-
-			system("pause");
+						
+			system("pause"); // remove for linux support
 
 			break;
 
@@ -176,6 +174,8 @@ void Game::Run()
 		frame_timer.StopTimer();
 
 		frame_time = frame_timer.GetTimeSeconds();
+
+		std::cout << "Frame time: " << frame_time << "\n";
 
 	}
 

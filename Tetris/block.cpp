@@ -285,6 +285,8 @@ void BlockControl::RenderBlock(SDL_Renderer *ren)
 		my_lines.push_back(current_block.block_squares[i].left);
 		my_lines.push_back(current_block.block_squares[i].right);
 
+		current_block.block_squares[i].PrintSquareInfo();
+
 		Utilities::DrawLines(ren, my_lines);
 	}
 
@@ -326,16 +328,8 @@ void BlockControl::HandleUp(SDL_Renderer* ren,
 		&& !CheckCollision(current_block.block_squares, Block::RIGHT, board_squares))
 	{
 
-		//std::cout << "Block position: " << current_block.GetLocX() <<
-			//", " << current_block.GetLocY() << "\n";
-
 		Rotate(ren, board_squares);
-
-		//std::cout << "Block position: " << current_block.GetLocX() <<
-			//", " << current_block.GetLocY() << "\n";
-
-		//system("pause");
-
+		
 		time_updated = game_timer.GetTimeSeconds();
 	}
 

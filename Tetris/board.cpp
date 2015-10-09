@@ -36,11 +36,20 @@ bool Board::DrawBoardBlocks(SDL_Renderer *ren)
 		Utilities::RenderTexture(ren, board_squares[i].tex.get(),
 			board_squares[i].x, board_squares[i].y);
 
+
+		std::vector<Line> my_lines;
+
+		my_lines.push_back(board_squares[i].top);
+		my_lines.push_back(board_squares[i].down);
+		my_lines.push_back(board_squares[i].left);
+		my_lines.push_back(board_squares[i].right);
+
+		Utilities::DrawLines(ren, my_lines);
+
 	}
 
 	return CheckForFail();
 	
-
 }
 
 

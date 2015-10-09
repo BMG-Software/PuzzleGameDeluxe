@@ -20,6 +20,15 @@ Line::Line(int ax, int ay, int bx, int by)
 }
 
 
+void Line::PrintLineInfo()
+{
+
+	std::cout << a.x << ", " << a.y << 
+		", " << b.x << ", " << b.y << "\n";
+
+}
+
+
 Square::Square(SDL_Rect rect, SDL_Texture *tex) : 
     tex(tex, SDL_DestroyTexture)
 {
@@ -44,8 +53,6 @@ void Square::Update(int x, int y)
 
 	this->x += x;
 	this->y += y;
-
-	// PrintLocation();
 
 	top.a.x += x;
 	top.a.y += y;
@@ -73,44 +80,35 @@ void Square::Update(int x, int y)
 }
 
 
-void Square::CorrectLocation()
-{
-
-	//this->x *= -1;
-	this->y *= -1;
-
-
-	//top.a.x *= -1;
-	top.a.y *= -1;
-	//top.b.x *= -1;
-	top.b.y *= -1;
-
-
-	//down.a.x *= -1;
-	down.a.y *= -1;
-	//down.b.x *= -1;
-	down.b.y *= -1;
-
-
-	//right.a.x *= -1;
-	right.a.y *= -1;
-	//right.b.x *= -1;
-	right.b.y *= -1;
-
-
-	//left.a.x *= -1;
-	left.a.y *= -1;
-	//left.b.x *= -1;
-	left.b.y *= -1;
-
-}
-
-
 void Square::PrintLocation()
 {
 
 	std::cout << "Current square location " 
 		<< x << ", " << y << "\n";
+
+}
+
+
+void Square::PrintSquareInfo()
+{
+
+	PrintLocation();
+
+	std::cout << "Top: ";
+
+	top.PrintLineInfo();
+
+	std::cout << "Down: ";
+
+	down.PrintLineInfo();
+
+	std::cout << "Right: ";
+
+	right.PrintLineInfo();
+
+	std::cout << "Left: ";
+
+	left.PrintLineInfo();
 
 }
 
@@ -204,7 +202,9 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 	std::array<std::array<int, 4>, 4> block_array)
 {
 
-	Copy2DArray(block_array);
+	Copy2DArray(block_array); 
+	// back up the array so blocks can be reverted 
+	// if collision is detected.
 
 	block_squares = std::vector<Square>();
 
@@ -281,12 +281,6 @@ void Block::Rotate(SDL_Renderer* ren)
 	rotated_arr[1][0] = block_arr[3][1];
 	rotated_arr[2][0] = block_arr[3][2];
 	rotated_arr[3][0] = block_arr[3][3];
-		
-	/*Print2DArray(block_arr);
-
-	std::cout << "\n";
-
-	Print2DArray(rotated_arr);*/
 
 	ParseBlockArray(ren, rotated_arr);
 
@@ -295,11 +289,9 @@ void Block::Rotate(SDL_Renderer* ren)
 
 		block_squares[i].PrintLocation();
 
-		//block_squares[i].CorrectLocation();
-
-		//block_squares[i].PrintLocation();
-
 	}
+
+	system("pause");
 
 }
 
