@@ -48,14 +48,14 @@ private:
 	static std::array<std::array<int, 4>, 4> o_block;
 
 
-	std::shared_ptr<SDL_Texture> tex;
+	//std::shared_ptr<SDL_Texture> tex;
 
 
 	int speed;
 
 
 	int velocity;
-
+	
 
 	float time_updated;
 

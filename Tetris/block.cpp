@@ -67,7 +67,7 @@ std::array < std::array<int, 4>, 4 > BlockControl::o_block =
 
 
 BlockControl::BlockControl(SDL_Renderer *ren)
-	: tex(nullptr, SDL_DestroyTexture)
+	//: tex(nullptr, SDL_DestroyTexture)
 {
 
 	blocks.push_back(Block(ren, "Resources\\green.png", i_block));
@@ -79,7 +79,7 @@ BlockControl::BlockControl(SDL_Renderer *ren)
 	blocks.push_back(Block(ren, "Resources\\yellow.png", z_block));
 
 	speed = 0;
-
+	
 	velocity = 60;
 
 	game_timer.StartTimer();
@@ -87,8 +87,8 @@ BlockControl::BlockControl(SDL_Renderer *ren)
 }
 
 
-BlockControl::BlockControl(const BlockControl &b) :
-    tex(b.tex)
+BlockControl::BlockControl(const BlockControl &b) 
+	//: tex(b.tex)
 {
 
 	speed = b.speed;
@@ -163,7 +163,7 @@ bool BlockControl::CheckCollision(std::vector<Square> block_squares, int directi
 					return true;
 
 				}
-				else if (CheckAdvancedCollision(block_squares[i].left, board_squares[x].left, 0))
+				else if (CheckAdvancedCollision(block_squares[i].left, board_squares[x].right, 0))
 				{
 
 					return true;
@@ -272,12 +272,19 @@ bool BlockControl::UpdatePosition(std::vector<Square> board_squares)
 void BlockControl::RenderBlock(SDL_Renderer *ren)
 {
 	
+	/*if (tex.get() == nullptr)
+	{
+
+		std::cout << "Block texture has gone out of scope somewhere.\n";
+
+	}*/
+
 	for (unsigned int i = 0; i < current_block.block_squares.size(); ++i)
 	{
 
 		Utilities::RenderTexture(ren, current_block.block_squares[i].tex.get(),
 			current_block.block_squares[i].x, current_block.block_squares[i].y);
-
+		
 		std::vector<Line> my_lines;
 
 		my_lines.push_back(current_block.block_squares[i].top);
@@ -285,7 +292,7 @@ void BlockControl::RenderBlock(SDL_Renderer *ren)
 		my_lines.push_back(current_block.block_squares[i].left);
 		my_lines.push_back(current_block.block_squares[i].right);
 
-		current_block.block_squares[i].PrintSquareInfo();
+		// current_block.block_squares[i].PrintSquareInfo();
 
 		Utilities::DrawLines(ren, my_lines);
 	}
@@ -390,6 +397,6 @@ void BlockControl::Rotate(SDL_Renderer* ren, std::vector<Square> board_squares)
 {
 
 	current_block.Rotate(ren);
-		
+	
 }
 

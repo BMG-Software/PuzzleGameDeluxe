@@ -79,6 +79,9 @@ public:
 	Square(SDL_Rect rect, SDL_Texture *tex);
 
 
+	Square(const Square &s);
+
+
 	void Update(int x, int y);
 
 

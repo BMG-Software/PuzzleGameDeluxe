@@ -175,7 +175,7 @@ void Game::Run()
 
 		frame_time = frame_timer.GetTimeSeconds();
 
-		std::cout << "Frame time: " << frame_time << "\n";
+		// std::cout << "Frame time: " << frame_time << "\n";
 
 	}
 

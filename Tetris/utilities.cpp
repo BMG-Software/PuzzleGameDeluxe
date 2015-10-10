@@ -48,6 +48,25 @@ Square::Square(SDL_Rect rect, SDL_Texture *tex) :
 }
 
 
+Square::Square(const Square &s) :
+	tex(s.tex)
+{
+
+	x = s.x;
+
+	y = s.y;
+
+	top = s.top;
+
+	down = s.down;
+
+	left = s.left;
+
+	right = s.right;
+
+}
+
+
 void Square::Update(int x, int y)
 {
 
@@ -151,13 +170,13 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 
 	// Block is constructed at default location.
 	ParseBlockArray(ren, block_array);
-	
+	/*
 	if (block_arr.empty())
 	{
 
 		std::cout << "The block array has not been copied correctly.\n";
 
-	}
+	}*/
 
 	current_dir = UP; // UP is set as the default direction for each block spawned.
 
@@ -176,6 +195,13 @@ Block::Block(const Block &b) : colour(b.colour)
 	block_squares = b.block_squares;
 
 	current_dir = b.current_dir;
+
+	if (b.colour == nullptr)
+	{
+
+		std::cout << "Error copying block colour texture.\n";
+
+	}
 
 }
 
@@ -208,6 +234,11 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 
 	block_squares = std::vector<Square>();
 
+	SDL_Rect dest;
+
+	dest.w = 32;
+	dest.h = 32;
+
 	for (int i = 0; i < 4; ++i)
 	{
 
@@ -216,13 +247,9 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 
 			if (block_array[i][x] == 1)
 			{
-				
-				SDL_Rect dest;
-				
+			
 				dest.x = x * 32 + this->x;
 				dest.y = i * 32 + this->y;
-				
-				SDL_QueryTexture(colour.get(), NULL, NULL, &dest.w, &dest.h);
 				
 				block_squares.push_back(Square(dest, colour.get()));
 				
@@ -283,16 +310,14 @@ void Block::Rotate(SDL_Renderer* ren)
 	rotated_arr[3][0] = block_arr[3][3];
 
 	ParseBlockArray(ren, rotated_arr);
-
+	/*
 	for (int i = 0; i < block_squares.size(); ++i)
 	{
 
 		block_squares[i].PrintLocation();
 
-	}
-
-	system("pause");
-
+	}*/
+	
 }
 
 
@@ -331,16 +356,30 @@ void Utilities::RenderTexture(SDL_Renderer *ren,
 	SDL_Texture *tex, int x, int y)
 {
 
-	SDL_Rect dest;
+	if (tex == nullptr)
+	{
 
-	dest.x = x;
+		std::cout << "A null texture has been passed to be rendered.\n";
 
-	dest.y = y;
+	}
+	else
+	{
 
-	SDL_QueryTexture(tex,
-		NULL, NULL, &dest.w, &dest.h);
+		SDL_Rect dest;
 
-	SDL_RenderCopy(ren, tex, NULL, &dest);
+		dest.x = x;
+
+		dest.y = y;
+
+		SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
+
+		//dest.w = 32;
+
+		//dest.h = 32;
+
+		SDL_RenderCopy(ren, tex, NULL, &dest);
+
+	}
 
 }
 
