@@ -8,6 +8,14 @@
 #include "core.h"
 
 
+/*
+
+Whole program would likely benefit from having a 
+proper exception system integrated into it.
+
+*/
+
+
 int InitialiseSDL()
 {
 

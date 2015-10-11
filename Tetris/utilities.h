@@ -9,12 +9,14 @@
 
 
 #include <vector>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <memory>
 #include <array>
 
+
+// Points and lines could be removed if rects
+// were utilised instead.
 
 struct Point
 {
@@ -57,9 +59,9 @@ public:
 	// std::shared_ptr<SDL_Texture> tex;
 
 
-	SDL_Texture* tex;
+	// SDL_Texture* tex;
 
-
+	
 	int x;
 
 
@@ -67,6 +69,7 @@ public:
 
 
 	// Each square has lines that are used to check collision.
+	// TODO: change lines and use rectangles for collision.
 	Line top;
 
 	
@@ -97,14 +100,13 @@ public:
 };
 
 
-
+// TODO: Seperate out into a component architecture.
 class Block
 {
 
 
 public:
-
-
+	
 
 	// Stores the x and y locations of the top 
 	// left corner of the current block.
@@ -173,7 +175,8 @@ public:
 };
 
 
-
+// TODO: Remove utilities. Rendering should be moved to a graphics component
+// created for blocks.
 class Utilities
 {
 

@@ -14,6 +14,8 @@
 #include "utilities.h"
 
 
+// Board could also be refactored into components e.g. 
+// it could use the same graphics component as the blocks will.
 class Board
 {
 

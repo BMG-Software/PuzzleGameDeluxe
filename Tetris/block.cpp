@@ -103,6 +103,7 @@ BlockControl::BlockControl(const BlockControl &b)
 }
 
 
+// TODO: incorporate into line struct
 bool PointInLineRange(Point p, Line line)
 {
 

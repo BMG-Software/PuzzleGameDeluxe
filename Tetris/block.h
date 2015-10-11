@@ -1,7 +1,5 @@
 
 
-
-
 #ifndef BLOCKCONTROL_H_
 #define BLOCKCONTROL_H_
 
@@ -10,7 +8,6 @@
 #include <SDL_image.h>
 
 
-//#include <memory>
 #include <array>
 
 
@@ -19,6 +16,7 @@
 #include "timer.h"
 
 
+// TODO: Modify and turn into a control component that makes up part of a block.
 class BlockControl
 {
 
@@ -26,6 +24,7 @@ class BlockControl
 private:
 
 
+	// TODO: Move these arrays into the block class.
 	// Each array stores the pattern for loading a block
 	static std::array<std::array<int, 4>, 4> i_block;
 
@@ -78,13 +77,15 @@ public:
 	BlockControl(const BlockControl &b);
 
 
+
+	// TODO: Refactor collision out into a block physics component.
 	bool CheckCollision(std::vector<Square> block_squares, int direction, 
 		std::vector<Square> board_squares);
 
 
 	bool CheckAdvancedCollision(Line block_line, Line board_line, int limit);
 
-
+	// TODO: Move to graphics component.
 	bool DrawBlock(SDL_Renderer *ren, 
 		std::vector<Square> board_squares, float frame_time);
 
@@ -117,9 +118,7 @@ public:
 
 
 	void Rotate(SDL_Renderer* ren, std::vector<Square> board_squares);
-
-
-
+	
 
 };
 

@@ -30,7 +30,7 @@ private:
 
 	bool gen_block;
 
-
+    // Window and renderer could be refactored out into their own class.
 	std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> ren;
 
 
