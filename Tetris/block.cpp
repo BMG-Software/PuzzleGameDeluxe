@@ -66,8 +66,10 @@ std::array < std::array<int, 4>, 4 > BlockControl::o_block =
 };
 
 
+BlockControl::BlockControl(){}
+
+
 BlockControl::BlockControl(SDL_Renderer *ren)
-	//: tex(nullptr, SDL_DestroyTexture)
 {
 
 	blocks.push_back(Block(ren, "Resources\\green.png", i_block));
@@ -88,7 +90,6 @@ BlockControl::BlockControl(SDL_Renderer *ren)
 
 
 BlockControl::BlockControl(const BlockControl &b) 
-	//: tex(b.tex)
 {
 
 	speed = b.speed;
@@ -225,10 +226,11 @@ void BlockControl::GenerateRandomBlock()
 }
 
 
-bool BlockControl::DrawBlock(SDL_Renderer *ren, std::vector<Square> board_squares)
+bool BlockControl::DrawBlock(SDL_Renderer *ren, 
+	std::vector<Square> board_squares, float frame_time)
 {
 
-	if (UpdatePosition(board_squares))
+	if (UpdatePosition(board_squares, frame_time))
 	{
 
 		return true;
@@ -242,47 +244,33 @@ bool BlockControl::DrawBlock(SDL_Renderer *ren, std::vector<Square> board_square
 }
 
 
-bool BlockControl::UpdatePosition(std::vector<Square> board_squares)
+bool BlockControl::UpdatePosition(std::vector<Square> board_squares, float frame_time)
 {
 
-	for (int i = 0; i < speed; ++i) // needs fixing
+	if (!CheckCollision(current_block.block_squares, Block::DOWN, board_squares))
 	{
 
-		if (!CheckCollision(current_block.block_squares, Block::DOWN, board_squares))
-		{
-
-			current_block.UpdateSquares(0, 1);
-			return false;
-
-		}
-		else
-		{
-
-			return true;
-		
-		}
+		current_block.UpdateSquares(0, 1/*velocity * frame_time*/);
+		return false;
 
 	}
+	else
+	{
 
-	return false;
-
+		return true;
+		
+	}
+	
 }
 
 
 void BlockControl::RenderBlock(SDL_Renderer *ren)
 {
-	
-	/*if (tex.get() == nullptr)
-	{
-
-		std::cout << "Block texture has gone out of scope somewhere.\n";
-
-	}*/
 
 	for (unsigned int i = 0; i < current_block.block_squares.size(); ++i)
 	{
 
-		Utilities::RenderTexture(ren, current_block.block_squares[i].tex.get(),
+		Utilities::RenderTexture(ren, current_block.block_squares[i].tex/*.get()*/,
 			current_block.block_squares[i].x, current_block.block_squares[i].y);
 		
 		std::vector<Line> my_lines;
@@ -317,7 +305,7 @@ void BlockControl::MoveBlock(SDL_Renderer* ren,
 
 	}
 
-	HandleDown(current_state, frame_time);
+	HandleDown(current_state, frame_time, board_squares);
 	
 }
 
@@ -365,20 +353,30 @@ void BlockControl::HandleLeftAndRight(const Uint8 *state, std::vector<Square> bo
 }
 
 
-void BlockControl::HandleDown(const Uint8 *state, float frame_time)
+void BlockControl::HandleDown(const Uint8 *state, float frame_time, std::vector<Square> board_squares)
 {
-
-	if (state[SDL_SCANCODE_DOWN])
-	{
-		// TODO: Speed increase needs fixing..
-		speed = int((velocity * 2) * frame_time);
-
-	}
-
-	if (!state[SDL_SCANCODE_DOWN])
+	
+	if (!CheckCollision(current_block.block_squares, Block::DOWN, board_squares))
 	{
 
-		speed = int(velocity * frame_time);
+		if (state[SDL_SCANCODE_DOWN])
+		{
+			
+			velocity = 120;
+
+		}
+
+		if (!state[SDL_SCANCODE_DOWN])
+		{
+
+			if (velocity == 120)
+			{
+
+				velocity = 60;
+
+			}
+
+		}
 
 	}
 

@@ -54,7 +54,10 @@ class Square
 public:
 
 
-	std::shared_ptr<SDL_Texture> tex;
+	// std::shared_ptr<SDL_Texture> tex;
+
+
+	SDL_Texture* tex;
 
 
 	int x;
@@ -111,7 +114,10 @@ public:
 	int y;
 
 
-	std::shared_ptr<SDL_Texture> colour;
+	// std::shared_ptr<SDL_Texture> colour;
+
+
+	SDL_Texture* colour;
 
 
 	// Each block saves a copy of it's own array which

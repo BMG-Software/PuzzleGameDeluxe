@@ -29,9 +29,11 @@ void Line::PrintLineInfo()
 }
 
 
-Square::Square(SDL_Rect rect, SDL_Texture *tex) : 
-    tex(tex, SDL_DestroyTexture)
+Square::Square(SDL_Rect rect, SDL_Texture *tex) 
+	// : tex(tex, SDL_DestroyTexture)
 {
+
+	this->tex = tex;
 
 	x = rect.x;
 
@@ -48,9 +50,11 @@ Square::Square(SDL_Rect rect, SDL_Texture *tex) :
 }
 
 
-Square::Square(const Square &s) :
-	tex(s.tex)
+Square::Square(const Square &s) 
+	// : tex(s.tex)
 {
+
+	tex = s.tex;
 
 	x = s.x;
 
@@ -69,6 +73,25 @@ Square::Square(const Square &s) :
 
 void Square::Update(int x, int y)
 {
+	/*
+	while (true)
+	{
+
+		if (y % 2 != 0 && y != 1)
+		{
+
+			y -= 1;
+
+		}
+		else
+		{
+
+			break;
+
+		}
+
+	}*/
+
 
 	this->x += x;
 	this->y += y;
@@ -132,7 +155,8 @@ void Square::PrintSquareInfo()
 }
 
 
-Block::Block() : colour(nullptr, SDL_DestroyTexture) {}
+Block::Block() //: colour(nullptr, SDL_DestroyTexture)
+{}
 
 
 void Print2DArray(std::array<std::array<int, 4>, 4> arr)
@@ -156,9 +180,11 @@ void Print2DArray(std::array<std::array<int, 4>, 4> arr)
 
 
 Block::Block(SDL_Renderer *ren, std::string colour_filename,
-	std::array<std::array<int, 4>, 4> block_array) :
-	colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
+	std::array<std::array<int, 4>, 4> block_array) 
+	// : colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
 {
+
+	colour = IMG_LoadTexture(ren, colour_filename.c_str());
 
 	// 192 and 128 are the offsets used to centre the block off screen.
 	// They are only set if a particular location isn't entered into the
@@ -183,7 +209,7 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 }
 
 
-Block::Block(const Block &b) : colour(b.colour)
+Block::Block(const Block &b) //: colour(b.colour)
 {
 
 	this->x = b.x;
@@ -195,13 +221,13 @@ Block::Block(const Block &b) : colour(b.colour)
 	block_squares = b.block_squares;
 
 	current_dir = b.current_dir;
-
+	/*
 	if (b.colour == nullptr)
 	{
 
 		std::cout << "Error copying block colour texture.\n";
 
-	}
+	}*/
 
 }
 
@@ -251,7 +277,7 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 				dest.x = x * 32 + this->x;
 				dest.y = i * 32 + this->y;
 				
-				block_squares.push_back(Square(dest, colour.get()));
+				block_squares.push_back(Square(dest, /*colour.get()*/ nullptr ));
 				
 			}
 
@@ -264,6 +290,8 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 
 void Block::UpdateSquares(int x, int y)
 {
+
+	std::cout << "Moved down by: " << y << "\n";
 
 	for (unsigned int i = 0; i < block_squares.size(); ++i)
 	{
@@ -372,10 +400,6 @@ void Utilities::RenderTexture(SDL_Renderer *ren,
 		dest.y = y;
 
 		SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
-
-		//dest.w = 32;
-
-		//dest.h = 32;
 
 		SDL_RenderCopy(ren, tex, NULL, &dest);
 

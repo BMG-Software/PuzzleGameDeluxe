@@ -113,12 +113,45 @@ void Game::PrintScore(char number, SDL_Rect location)
 }
 
 
+void Game::CheckForGenBlock()
+{
+
+	// checks if a new block should be generated
+	if (gen_block)
+	{
+
+		controller.GenerateRandomBlock();
+
+		gen_block = false;
+
+	}
+
+}
+
+
+void Game::DrawAndCheckBoardAddition(float frame_time)
+{
+
+	// Draws the block at it's current location - 
+	// returns true if the block has collided with another.
+	if (controller.DrawBlock(ren.get(), game_board.board_squares, frame_time))
+	{
+
+		game_board.AddToBoard(controller.GetCurrentBlock(), score);
+
+		gen_block = true;
+
+	}
+
+}
+
+
 void Game::Run()
 {
 
-	BlockControl controller(ren.get());
+	controller = BlockControl(ren.get());
 
-	Board game_board(ren.get());
+	game_board = Board(ren.get());
 
 	float frame_time = 0.0;
 
@@ -133,39 +166,13 @@ void Game::Run()
 		
 		controller.MoveBlock(ren.get(), game_board.board_squares, frame_time);
 		
-		SDL_Delay(0017); // aim for 60 fps
+		SDL_Delay(0034); // aim for 30 fps
 		
-		if (gen_block)
-		{
-
-			controller.GenerateRandomBlock();
-			// Centre the block.
-			gen_block = false;
+		CheckForGenBlock();
 		
-		}
+		DrawAndCheckBoardAddition(frame_time);
 
-
-		if (controller.DrawBlock(ren.get(), game_board.board_squares))
-		{
-
-			game_board.AddToBoard(controller.GetCurrentBlock(), score);
-
-			gen_block = true;
-
-		}
-
-		if (game_board.DrawBoardBlocks(ren.get()))
-		{
-
-			// Display with true type font
-
-			std::cout << " GAME OVER ! \n"; 
-						
-			system("pause"); // remove for linux support
-
-			break;
-
-		}
+		if (game_board.DrawBoardBlocks(ren.get())) break;
 		
 		DrawScore();
 		
@@ -174,9 +181,7 @@ void Game::Run()
 		frame_timer.StopTimer();
 
 		frame_time = frame_timer.GetTimeSeconds();
-
-		// std::cout << "Frame time: " << frame_time << "\n";
-
+		
 	}
 
 }

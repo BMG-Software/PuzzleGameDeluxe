@@ -10,7 +10,7 @@
 #include <SDL_image.h>
 
 
-#include <memory>
+//#include <memory>
 #include <array>
 
 
@@ -48,9 +48,6 @@ private:
 	static std::array<std::array<int, 4>, 4> o_block;
 
 
-	//std::shared_ptr<SDL_Texture> tex;
-
-
 	int speed;
 
 
@@ -72,6 +69,9 @@ private:
 public:
 
 
+	BlockControl();
+
+
 	BlockControl(SDL_Renderer *ren);
 
 
@@ -85,10 +85,11 @@ public:
 	bool CheckAdvancedCollision(Line block_line, Line board_line, int limit);
 
 
-	bool DrawBlock(SDL_Renderer *ren, std::vector<Square> board_squares);
+	bool DrawBlock(SDL_Renderer *ren, 
+		std::vector<Square> board_squares, float frame_time);
 
 
-	bool UpdatePosition(std::vector<Square> board_squares);
+	bool UpdatePosition(std::vector<Square> board_squares, float frame_time);
 
 
 	void RenderBlock(SDL_Renderer *ren);
@@ -106,7 +107,7 @@ public:
 		std::vector<Square> board_squares);
 
 
-	void HandleDown(const Uint8 *state, float frame_time);
+	void HandleDown(const Uint8 *state, float frame_time, std::vector<Square> board_squares);
 
 
 	Block GetCurrentBlock();

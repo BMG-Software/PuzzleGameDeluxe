@@ -40,6 +40,9 @@ public:
 	std::vector<Square> board_squares;
 
 
+	Board();
+
+
 	Board(SDL_Renderer *ren);
 
 

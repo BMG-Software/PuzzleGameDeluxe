@@ -40,23 +40,42 @@ private:
 	std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> numbers;
 
 
+	BlockControl controller;
+
+
+	Board game_board;
+
+
 	static std::vector<SDL_Rect> number_clips;
 
 
+	// Utilised to allow for frame independant movement.
 	Timer frame_timer;
 
 
+	// Checks for quit events.
 	bool EventLoop();
 
 
 	void InitWinAndRen();
 
+	// TODO: rewrite to utilise true type fonts
 
+	// Converts score so that it can be represented on screen.
 	void DrawScore();
 
 
+	// Prints converted score to screen
 	void PrintScore(char number, SDL_Rect location);
 
+
+	// Checks if a new block needs to be generated.
+	void CheckForGenBlock();
+
+
+	// Draw the block in it's current position and add to board if necessary.
+	void DrawAndCheckBoardAddition(float frame_time);
+	
 
 public:
 
@@ -64,6 +83,7 @@ public:
 	Game();
 
 
+	// Main game loop.
 	void Run();
 
 
