@@ -72,14 +72,23 @@ BlockControl::BlockControl(){}
 BlockControl::BlockControl(SDL_Renderer *ren)
 {
 
-	blocks.push_back(Block(ren, "Resources\\green.png", i_block));
+#ifdef _WIN32
+    blocks.push_back(Block(ren, "Resources\\green.png", i_block));
 	blocks.push_back(Block(ren, "Resources\\red.png", j_block));
 	blocks.push_back(Block(ren, "Resources\\blue.png", l_block));
 	blocks.push_back(Block(ren, "Resources\\orange.png", o_block));
 	blocks.push_back(Block(ren, "Resources\\purple.png", s_block));
 	blocks.push_back(Block(ren, "Resources\\cyan.png", t_block));
 	blocks.push_back(Block(ren, "Resources\\yellow.png", z_block));
-
+#else
+	blocks.push_back(Block(ren, "Resources/green.png", i_block));
+	blocks.push_back(Block(ren, "Resources/red.png", j_block));
+	blocks.push_back(Block(ren, "Resources/blue.png", l_block));
+	blocks.push_back(Block(ren, "Resources/orange.png", o_block));
+	blocks.push_back(Block(ren, "Resources/purple.png", s_block));
+	blocks.push_back(Block(ren, "Resources/cyan.png", t_block));
+	blocks.push_back(Block(ren, "Resources/yellow.png", z_block));
+#endif // _WIN32
 	speed = 0;
 	
 	velocity = 60;

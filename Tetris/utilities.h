@@ -3,9 +3,13 @@
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
 
-
+#ifdef _WIN32
 #include <SDL.h>
 #include <SDL_image.h>
+#else
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#endif // _WIN32
 
 
 #include <vector>
@@ -59,7 +63,7 @@ public:
 	// std::shared_ptr<SDL_Texture> tex;
 
 
-	// SDL_Texture* tex;
+	SDL_Texture* tex;
 
 	
 	int x;
@@ -131,7 +135,7 @@ public:
 	std::vector<Square> block_squares;
 
 
-	static enum directions { UP, DOWN, LEFT, RIGHT };
+	/*static*/ enum directions { UP, DOWN, LEFT, RIGHT };
 
 
 	// Stores the current direction of the block.

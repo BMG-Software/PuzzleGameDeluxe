@@ -277,7 +277,7 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 				dest.x = x * 32 + this->x;
 				dest.y = i * 32 + this->y;
 				
-				block_squares.push_back(Square(dest, /*colour.get()*/ nullptr ));
+				block_squares.push_back(Square(dest, /*colour.get()*/colour));
 				
 			}
 

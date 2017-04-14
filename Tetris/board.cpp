@@ -126,13 +126,13 @@ bool Board::CheckForFail()
 
 	for (unsigned int i = 0; i < board_squares.size(); ++i)
 	{
-		/* TODO: Must re-implement!!
+		// TODO: Must re-implement!!
 		if (board_squares[i].top.a.y <= 0)
 		{
 
 			return true;
 
-		}*/
+		}
 
 	}
 
