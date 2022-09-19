@@ -35,7 +35,8 @@ private:
 
     SDL_GameController *game_controller;
     SDL_Joystick *joystick;
-    Uint8 control_direction;
+
+    Uint8 m_p1ControlDirection, m_p2ControlDirection;
 
 
     // Window and renderer could be refactored out into their own class.

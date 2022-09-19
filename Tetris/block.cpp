@@ -79,6 +79,7 @@ BlockControl::BlockControl()
 	speed			= 0;
 	velocity		= 4;
 	time_updated	= 0;
+	m_boardBoundary = { 0, 0, 0, 0 };
 }
 
 BlockControl::BlockControl(SDL_Renderer *ren, SDL_Rect boardBoundary)

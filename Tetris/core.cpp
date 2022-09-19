@@ -44,10 +44,11 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
         number_clips.push_back({ i, 0, 32, 32 });
 	}
 
-	score               = 00000000; // Ha why so many zeroes :D
+	score               = 0000000; // Ha why so many zeroes :D
     game_controller     = nullptr;
     joystick            = nullptr;
-    control_direction   = BlockControl::block_direction_down;
+    m_p1ControlDirection = BlockControl::block_direction_down;
+    m_p2ControlDirection = BlockControl::block_direction_down;
 
     auto bg_surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(SDL_LoadBMP(BACKGROUND_FILENAME), SDL_FreeSurface);
     background      = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>(SDL_CreateTextureFromSurface(ren.get(), bg_surface.get()), SDL_DestroyTexture);
@@ -104,22 +105,40 @@ bool Game::EventLoop()
 		}
         else if (e.type == SDL_KEYDOWN)
         {
+#define E_KEY_SYM e.key.keysym.sym
             if (e.key.keysym.sym == SDLK_UP)
             {
-                control_direction = BlockControl::block_direction_up; // UP
+                m_p2ControlDirection = BlockControl::block_direction_up; // UP
             }
             else if (e.key.keysym.sym == SDLK_DOWN)
             {
-                control_direction = BlockControl::block_direction_down;
+                m_p2ControlDirection = BlockControl::block_direction_down;
             }
             else if (e.key.keysym.sym == SDLK_LEFT)
             {
-                control_direction = BlockControl::block_direction_left;
+                m_p2ControlDirection = BlockControl::block_direction_left;
             }
             else if (e.key.keysym.sym == SDLK_RIGHT)
             {
-                control_direction = BlockControl::block_direction_right;
+                m_p2ControlDirection = BlockControl::block_direction_right;
             }
+            else if (E_KEY_SYM == SDLK_w)
+            {
+                m_p1ControlDirection = BlockControl::block_direction_up; // UP
+            }
+            else if (E_KEY_SYM == SDLK_s)
+            {
+                m_p1ControlDirection = BlockControl::block_direction_down;
+            }
+            else if (E_KEY_SYM == SDLK_a)
+            {
+                m_p1ControlDirection = BlockControl::block_direction_left;
+            }
+            else if (E_KEY_SYM == SDLK_d)
+            {
+                m_p1ControlDirection = BlockControl::block_direction_right;
+            }
+#undef E_KEY_SYM
         }
         else if (e.type == SDL_CONTROLLERDEVICEADDED) // Sets up the xbox controller
         {
@@ -169,25 +188,25 @@ bool Game::EventLoop()
             }
         }
 #else
-        else if (e.type == SDL_JOYHATMOTION) // DPad works like a dream
-        {
-            if (e.jhat.value & SDL_HAT_UP)
-            {
-                control_direction = BlockControl::block_direction_up; // UP
-            }
-            else if (e.jhat.value & SDL_HAT_DOWN)
-            {
-                control_direction = BlockControl::block_direction_superdown; // DOWN
-            }
-            else if (e.jhat.value & SDL_HAT_LEFT)
-            {
-                control_direction = BlockControl::block_direction_left; // LEFT
-            }
-            else if (e.jhat.value & SDL_HAT_RIGHT)
-            {
-                control_direction = BlockControl::block_direction_right; // RIGHT
-            }
-        }
+        //else if (e.type == SDL_JOYHATMOTION) // DPad works like a dream
+        //{
+        //    if (e.jhat.value & SDL_HAT_UP)
+        //    {
+        //        control_direction = BlockControl::block_direction_up; // UP
+        //    }
+        //    else if (e.jhat.value & SDL_HAT_DOWN)
+        //    {
+        //        control_direction = BlockControl::block_direction_superdown; // DOWN
+        //    }
+        //    else if (e.jhat.value & SDL_HAT_LEFT)
+        //    {
+        //        control_direction = BlockControl::block_direction_left; // LEFT
+        //    }
+        //    else if (e.jhat.value & SDL_HAT_RIGHT)
+        //    {
+        //        control_direction = BlockControl::block_direction_right; // RIGHT
+        //    }
+        //}
 
 #endif
 
@@ -269,13 +288,13 @@ void Game::Run()
         SDL_RenderCopy(ren.get(), board_background.get(), &m_p1BoardDest, &m_p1BoardDest);
         SDL_RenderCopy(ren.get(), board_background.get(), &m_p1BoardDest, &m_p2BoardDest);
 	
-		p1Controller.MoveBlock(ren.get(), p1GameBoard.board_squares, control_direction, frame_time);
+		p1Controller.MoveBlock(ren.get(), p1GameBoard.board_squares, m_p1ControlDirection, frame_time);
 		CheckForGenBlock(p1Controller, p1GenBlock);
 		p1GenBlock = DrawAndCheckBoardAddition(frame_time, p1Controller, p1GameBoard);
 		if (p1GameBoard.DrawBoardBlocks(ren.get())) 
             break;
 
-        p2Controller.MoveBlock(ren.get(), p2GameBoard.board_squares, control_direction, frame_time);
+        p2Controller.MoveBlock(ren.get(), p2GameBoard.board_squares, m_p2ControlDirection, frame_time);
         CheckForGenBlock(p2Controller, p2GenBlock);
         p2GenBlock = DrawAndCheckBoardAddition(frame_time, p2Controller, p2GameBoard);
         if (p2GameBoard.DrawBoardBlocks(ren.get()))
@@ -289,7 +308,8 @@ void Game::Run()
 		frame_timer.StopTimer();
 		frame_time = frame_timer.GetTimeSeconds();
 
-        control_direction = BlockControl::block_direction_down;	
+        m_p1ControlDirection = BlockControl::block_direction_down;	
+        m_p2ControlDirection = BlockControl::block_direction_down;
 	}
 
 }

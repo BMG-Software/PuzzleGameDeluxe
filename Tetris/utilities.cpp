@@ -4,96 +4,59 @@
 #include "core.h"
 
 
-Line::Line(){};
+Line::Line()
+{
+	a.x = 0;
+	a.y = 0;
+	b.x = 0;
+	b.y = 0;
+};
 
 
 Line::Line(int ax, int ay, int bx, int by)
 {
-
 	a.x = ax;
-
 	a.y = ay;
-
 	b.x = bx;
-
 	b.y = by;
-
 }
 
 
 void Line::PrintLineInfo()
 {
-
 	std::cout << a.x << ", " << a.y << 
 		", " << b.x << ", " << b.y << "\n";
-
 }
 
 
 Square::Square(SDL_Rect rect, SDL_Texture *tex) 
-	// : tex(tex, SDL_DestroyTexture)
 {
-
-	this->tex = tex;
+	this->tex = tex; // TODO: Fixme - At a glance I think this texture leaks
 
 	x = rect.x;
-
 	y = rect.y;
 	
 	top = Line(rect.x, rect.y, rect.x + rect.w, rect.y);
-
 	down = Line(rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h);
-
 	left = Line(rect.x, rect.y, rect.x, rect.y + rect.h);
-
 	right = Line(rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h);
-
 }
 
 
 Square::Square(const Square &s) 
-	// : tex(s.tex)
 {
-
 	tex = s.tex;
-
 	x = s.x;
-
 	y = s.y;
-
 	top = s.top;
-
 	down = s.down;
-
 	left = s.left;
-
 	right = s.right;
-
 }
 
 
 void Square::Update(int x, int y)
 {
-	/*
-	while (true)
-	{
-
-		if (y % 2 != 0 && y != 1)
-		{
-
-			y -= 1;
-
-		}
-		else
-		{
-
-			break;
-
-		}
-
-	}*/
-
-
 	this->x += x;
 	this->y += y;
 
@@ -102,62 +65,57 @@ void Square::Update(int x, int y)
 	top.b.x += x;
 	top.b.y += y;
 
-
 	down.a.x += x;
 	down.a.y += y;
 	down.b.x += x;
 	down.b.y += y;
-
 
 	right.a.x += x;
 	right.a.y += y;
 	right.b.x += x;
 	right.b.y += y;
 
-
 	left.a.x += x;
 	left.a.y += y;
 	left.b.x += x;
 	left.b.y += y;
-
 }
 
 
 void Square::PrintLocation()
 {
-
 	std::cout << "Current square location " 
 		<< x << ", " << y << "\n";
-
 }
 
 
 void Square::PrintSquareInfo()
 {
-
 	PrintLocation();
-
+	
 	std::cout << "Top: ";
-
 	top.PrintLineInfo();
 
 	std::cout << "Down: ";
-
 	down.PrintLineInfo();
 
 	std::cout << "Right: ";
-
 	right.PrintLineInfo();
 
 	std::cout << "Left: ";
-
 	left.PrintLineInfo();
-
 }
 
 
 Block::Block() //: colour(nullptr, SDL_DestroyTexture)
-{}
+{
+	block_arr.fill({ 0, 0, 0, 0 });
+
+	x = 0;
+	y = 0;
+	colour = nullptr;
+	current_dir = 0;
+}
 
 
 void Print2DArray(std::array<std::array<int, 4>, 4> arr)
