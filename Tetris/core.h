@@ -29,11 +29,7 @@ class Game
 
 private:
 
-
 	int score;
-
-
-	bool gen_block;
 
 	static int m_windowWidth, m_windowHeight;
 
@@ -52,12 +48,6 @@ private:
 
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture *)> board_background;
     SDL_Rect m_p1BoardDest, m_p2BoardDest;
-
-
-	BlockControl controller;
-
-
-	Board game_board;
 
 
 	static std::vector<SDL_Rect> number_clips;
@@ -84,11 +74,11 @@ private:
 
 
 	// Checks if a new block needs to be generated.
-	void CheckForGenBlock();
+	void CheckForGenBlock(BlockControl &controller, bool &inOutGenBlock);
 
 
 	// Draw the block in it's current position and add to board if necessary.
-	void DrawAndCheckBoardAddition(float frame_time);
+	bool DrawAndCheckBoardAddition(float frame_time, BlockControl &controller, Board &gameBoard);
 	
 
 public:

@@ -2,13 +2,17 @@
 
 #include "core.h"
 
-std::vector<SDL_Rect> Game::number_clips;
-
+// Constants
 const char * const BACKGROUND_FILENAME = ".\\Resources\\background.bmp";
+const int BOARD_WIDTH = 448;
+
+// Static members
+std::vector<SDL_Rect> Game::number_clips;
 
 int Game::m_windowWidth = 0;
 int Game::m_windowHeight = 0;
 
+// Member functions
 void Game::InitWinAndRen(bool fullscreen)
 {
 	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50, m_windowWidth, m_windowHeight, 
@@ -41,7 +45,6 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
 	}
 
 	score               = 00000000; // Ha why so many zeroes :D
-	gen_block           = true;
     game_controller     = nullptr;
     joystick            = nullptr;
     control_direction   = BlockControl::block_direction_down;
@@ -62,17 +65,18 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
     };
 
     board_background    = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture *)>(SDL_CreateTexture(ren.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth / 2, windowHeight), SDL_DestroyTexture);
+    int boardOffset = static_cast<int>(windowWidth * 0.05);
     m_p1BoardDest       = { 
-        static_cast<int>(windowWidth * 0.05), 
+        boardOffset, 
         0, 
-        448, 
+        BOARD_WIDTH, 
         windowHeight 
     };
 
     m_p2BoardDest = {
-        windowWidth - (448) - static_cast<int>(windowWidth * 0.05),
+        windowWidth - BOARD_WIDTH - boardOffset,
         0,
-        448,
+        BOARD_WIDTH,
         windowHeight
     };
 
@@ -223,34 +227,39 @@ void Game::PrintScore(char number, SDL_Rect location)
 }
 
 
-void Game::CheckForGenBlock()
+void Game::CheckForGenBlock(BlockControl &controller, bool &inOutGenBlock)
 {
 	// checks if a new block should be generated
-	if (gen_block)
+	if (inOutGenBlock)
 	{
 		controller.GenerateRandomBlock();
-		gen_block = false;
+		inOutGenBlock = false;
 	}
 }
 
 
-void Game::DrawAndCheckBoardAddition(float frame_time)
+bool Game::DrawAndCheckBoardAddition(float frame_time, BlockControl &controller, Board &gameBoard)
 {
 	// Draws the block at it's current location - 
 	// returns true if the block has collided with another.
-	if (controller.DrawBlock(ren.get(), game_board.board_squares, frame_time))
+	if (controller.DrawBlock(ren.get(), gameBoard.board_squares, frame_time))
 	{
-		game_board.AddToBoard(controller.GetCurrentBlock(), score);
-		gen_block = true;
+		gameBoard.AddToBoard(controller.GetCurrentBlock(), score);
+		return true;
 	}
+    return false;
 }
 
 void Game::Run()
 {
+    bool genBlock = true;
 	float frame_time = 0.0;
-    
-	controller = BlockControl(ren.get(), m_p1BoardDest);
-	game_board = Board(ren.get(), m_p1BoardDest);
+
+    BlockControl p1Controller(ren.get(), m_p1BoardDest);
+    BlockControl p2Controller(ren.get(), m_p2BoardDest);
+
+    Board p1GameBoard(ren.get(), m_p1BoardDest);
+    Board p2GameBoard(ren.get(), m_p2BoardDest);
     
 	while (!EventLoop())
 	{
@@ -263,15 +272,15 @@ void Game::Run()
         SDL_RenderCopy(ren.get(), board_background.get(), &m_p1BoardDest, &m_p1BoardDest);
         SDL_RenderCopy(ren.get(), board_background.get(), &m_p1BoardDest, &m_p2BoardDest);
 	
-		controller.MoveBlock(ren.get(), game_board.board_squares, control_direction, frame_time);
+		p1Controller.MoveBlock(ren.get(), p1GameBoard.board_squares, control_direction, frame_time);
 		
 		SDL_Delay(0017); // aim for 60 fps
 		
-		CheckForGenBlock();
+		CheckForGenBlock(p1Controller, genBlock);
 		
-		DrawAndCheckBoardAddition(frame_time);
+		genBlock = DrawAndCheckBoardAddition(frame_time, p1Controller, p1GameBoard);
 
-		if (game_board.DrawBoardBlocks(ren.get())) 
+		if (p1GameBoard.DrawBoardBlocks(ren.get())) 
             break;
 		
         DrawScore();
