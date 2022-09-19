@@ -2,19 +2,27 @@
 
 #include "core.h"
 
+#include <Windows.h>
+#include <locale>
+#include <codecvt>
+
+
 
 std::vector<SDL_Rect> Game::number_clips;
+
+static const char *background_filename = "\\background.bmp";
+
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 
 void Game::InitWinAndRen()
 {
 
-	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50,
-		480, 800, SDL_WINDOW_SHOWN));
+	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FULLSCREEN));
 
 
-	ren.reset(SDL_CreateRenderer(win.get(), -1, SDL_RENDERER_ACCELERATED
-		| SDL_RENDERER_PRESENTVSYNC));
+	// ren.reset(SDL_CreateRenderer(win.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+    ren.reset(SDL_CreateRenderer(win.get(), -1, SDL_RENDERER_ACCELERATED));
 
 	if (win == nullptr || ren == nullptr)
 	{
@@ -33,7 +41,7 @@ Game::Game() : win(nullptr, SDL_DestroyWindow),
 
 	InitWinAndRen();
 
-	numbers.reset(IMG_LoadTexture(ren.get(), "Resources\\numbers.png"));
+	// numbers.reset(IMG_LoadTexture(ren.get(), "Resources\\numbers.png"));
 	
 	for (int i = 0; i < 320; i += 32)
 	{
@@ -46,9 +54,83 @@ Game::Game() : win(nullptr, SDL_DestroyWindow),
 		number_clips.push_back(temp);
 	}
 
-	score = 00000000;
+	score = 00000000; // Ha why so many zeroes :D
 
 	gen_block = true;
+
+    game_controller = nullptr;
+    joystick = nullptr;
+    control_direction = BlockControl::block_direction_down;
+
+    //// Nicked from stack overflow to get files opening
+    //std::wstring buffer;
+    //size_t bufferLen = MAX_PATH;
+
+    //while (true)
+    //{
+    //    buffer.resize(bufferLen);
+    //    bufferLen *= 2;
+
+    //    SetLastError(ERROR_SUCCESS);
+
+    //    auto pathLen = GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), &buffer[0], static_cast<DWORD>(buffer.length()));
+
+    //    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+    //    {
+    //        buffer.resize(pathLen);
+    //        break;
+    //    }
+
+    //}
+
+    //auto dirLen = buffer.length() - 1;
+    //while (dirLen > 0 && buffer[dirLen] != '\\' && buffer[dirLen] != '/')
+    //    dirLen--;
+
+    //if (dirLen > 0)
+    //    buffer.resize(dirLen);
+
+    //using convert_type = std::codecvt_utf8<wchar_t>;
+    //std::wstring_convert<convert_type, wchar_t> converter;
+    //std::string bg_filepath = converter.to_bytes(buffer);
+
+    //// End of nicked stuff
+
+    // bg_filepath.append(background_filename);
+    SDL_Surface *bg_surface = SDL_LoadBMP(".\\Resources\\background.bmp");
+    background = SDL_CreateTextureFromSurface(ren.get(), bg_surface);
+
+    SDL_FreeSurface(bg_surface);
+    bg_surface = NULL;
+
+    SDL_QueryTexture(background, NULL, NULL, &background_src.w, &background_src.h);
+
+    background_src.x = 0;
+    background_src.y = 0;
+
+    background_dest = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+
+    board_background_dest = { (int)(WINDOW_WIDTH * 0.25), 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT };
+    board_background = SDL_CreateTexture(ren.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
+
+    SDL_SetTextureBlendMode(board_background, SDL_BLENDMODE_BLEND);
+    
+    SDL_SetRenderTarget(ren.get(), board_background);
+    SDL_SetRenderDrawBlendMode(ren.get(), SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(ren.get(), 127, 127, 127, 127);
+    SDL_RenderFillRect(ren.get(), NULL);
+
+    SDL_SetRenderTarget(ren.get(), NULL);
+
+
+}
+
+
+Game::~Game()
+{
+
+    SDL_DestroyTexture(background);
+    SDL_DestroyTexture(board_background);
 
 }
 
@@ -67,6 +149,94 @@ bool Game::EventLoop()
 			return true;
 
 		}
+        else if (e.type == SDL_KEYDOWN)
+        {
+            if (e.key.keysym.sym == SDLK_UP)
+            {
+                control_direction = BlockControl::block_direction_up; // UP
+            }
+            else if (e.key.keysym.sym == SDLK_DOWN)
+            {
+                control_direction = BlockControl::block_direction_down;
+            }
+            else if (e.key.keysym.sym == SDLK_LEFT)
+            {
+                control_direction = BlockControl::block_direction_left;
+            }
+            else if (e.key.keysym.sym == SDLK_RIGHT)
+            {
+                control_direction = BlockControl::block_direction_right;
+            }
+        }
+        else if (e.type == SDL_CONTROLLERDEVICEADDED) // Sets up the xbox controller
+        {
+            for (int i = 0; i < SDL_NumJoysticks(); i++)
+            {
+                game_controller = SDL_GameControllerOpen(i);
+                if (game_controller)
+                {
+                    joystick = SDL_JoystickOpen(i);
+                    if (joystick)
+                    {
+                        return false;
+                    }
+
+                }
+            }
+
+        }
+#if 0
+        // Analogue stick doesn't move blocks when pushed fully in any direction
+        else if (e.type == SDL_JOYAXISMOTION)
+        {
+
+            int value = e.jaxis.value; //SDL_JoystickGetAxis(joystick, e.jaxis.which);
+
+            if (e.jaxis.axis == 0)
+            {
+                if (value < -3200)
+                {
+                    control_direction = BlockControl::block_direction_left; // LEFT
+                }
+                else if (value > 3200)
+                {
+                    control_direction = BlockControl::block_direction_right; // RIGHT
+                }
+            }
+            else if (e.jaxis.axis == 1)
+            {
+                if (value < -3200)
+                {
+                    control_direction = BlockControl::block_direction_up; // UP
+                }
+                else if (value > 3200)
+                {
+                    control_direction = BlockControl::block_direction_down; // DOWN
+                }
+            }
+        }
+#else
+        else if (e.type == SDL_JOYHATMOTION) // DPad works like a dream
+        {
+            if (e.jhat.value & SDL_HAT_UP)
+            {
+                control_direction = BlockControl::block_direction_up; // UP
+            }
+            else if (e.jhat.value & SDL_HAT_DOWN)
+            {
+                control_direction = BlockControl::block_direction_superdown; // DOWN
+            }
+            else if (e.jhat.value & SDL_HAT_LEFT)
+            {
+                control_direction = BlockControl::block_direction_left; // LEFT
+            }
+            else if (e.jhat.value & SDL_HAT_RIGHT)
+            {
+                control_direction = BlockControl::block_direction_right; // RIGHT
+            }
+        }
+
+#endif
 
 	}
 
@@ -87,9 +257,7 @@ void Game::DrawScore()
 
 	for (unsigned int i = 0; i < score_string.size(); ++i)
 	{
-
 		PrintScore(score_string[i], number_clips[i]);
-
 	}
 
 
@@ -108,7 +276,7 @@ void Game::PrintScore(char number, SDL_Rect location)
 
 	convertor >> my_num;
 
-	SDL_RenderCopy(ren.get(), numbers.get(), &number_clips[my_num], &location);
+	// SDL_RenderCopy(ren.get(), numbers.get(), &number_clips[my_num], &location);
 	
 }
 
@@ -148,25 +316,33 @@ void Game::DrawAndCheckBoardAddition(float frame_time)
 
 void Game::Run()
 {
-
+    
 	controller = BlockControl(ren.get());
 
 	game_board = Board(ren.get());
-
+    
 	float frame_time = 0.0;
-
+    
 	while (!EventLoop())
 	{
+
+        //if (game_controller == nullptr || joystick == nullptr)
+        //    continue;
 
 		frame_timer.StartTimer();
 
 		SDL_SetRenderDrawColor(ren.get(), 127, 127, 127, 255);
 		
 		SDL_RenderClear(ren.get());
+
+        SDL_RenderCopy(ren.get(), background, &background_src, &background_dest);
+
+        SDL_RenderCopy(ren.get(), board_background, &board_background_dest, &board_background_dest);
 		
-		controller.MoveBlock(ren.get(), game_board.board_squares, frame_time);
+        
+		controller.MoveBlock(ren.get(), game_board.board_squares, control_direction, frame_time);
 		
-		SDL_Delay(0034); // aim for 30 fps
+		SDL_Delay(0017); // aim for 60 fps
 		
 		CheckForGenBlock();
 		
@@ -174,13 +350,15 @@ void Game::Run()
 
 		if (game_board.DrawBoardBlocks(ren.get())) break;
 		
-		DrawScore();
-		
+        DrawScore();
+
 		SDL_RenderPresent(ren.get());
 
 		frame_timer.StopTimer();
 
 		frame_time = frame_timer.GetTimeSeconds();
+
+        control_direction = BlockControl::block_direction_down;
 		
 	}
 

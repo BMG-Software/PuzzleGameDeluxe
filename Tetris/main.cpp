@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 #include <SDL.h>
-#include <SDL_image.h>
+// #include <SDL_image.h>
 #else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -24,7 +24,7 @@ proper exception system integrated into it.
 int InitialiseSDL()
 {
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
 	{
 
 		std::cout << "Error initialising SDL.\n";
@@ -45,6 +45,8 @@ int main(int argc, char* argv[])
 	Game my_game;
 
 	my_game.Run();
+
+    SDL_Quit();
 
 	return 0;
 

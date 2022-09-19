@@ -6,7 +6,7 @@
 
 #ifdef _WIN32
 #include <SDL.h>
-#include <SDL_image.h>
+// #include <SDL_image.h>
 #else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -35,6 +35,12 @@ private:
 
 	bool gen_block;
 
+
+    SDL_GameController *game_controller;
+    SDL_Joystick *joystick;
+    Uint8 control_direction;
+
+
     // Window and renderer could be refactored out into their own class.
 	std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> ren;
 
@@ -43,6 +49,13 @@ private:
 
 
 	std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> numbers;
+
+
+    SDL_Texture *background;
+    SDL_Rect background_src, background_dest;
+
+    SDL_Texture *board_background;
+    SDL_Rect board_background_dest;
 
 
 	BlockControl controller;
@@ -85,7 +98,13 @@ private:
 public:
 
 
+    static const int WINDOW_WIDTH = 1920;
+    static const int WINDOW_HEIGHT = 1080;
+
+
 	Game();
+
+    virtual ~Game();
 
 
 	// Main game loop.

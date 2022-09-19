@@ -6,7 +6,7 @@
 
 #ifdef _WIN32
 #include <SDL.h>
-#include <SDL_image.h>
+// #include <SDL_image.h>
 #else
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -52,6 +52,8 @@ private:
 	static std::array<std::array<int, 4>, 4> o_block;
 
 
+
+
 	int speed;
 
 
@@ -70,8 +72,10 @@ private:
 	std::vector<Block> blocks;
 
 
+
 public:
 
+    static Uint8 block_direction_up, block_direction_down, block_direction_left, block_direction_right, block_direction_superdown;
 
 	BlockControl();
 
@@ -101,19 +105,16 @@ public:
 	void RenderBlock(SDL_Renderer *ren);
 
 
-	void MoveBlock(SDL_Renderer* ren, 
-		std::vector<Square> board_squares, float frame_time);
+	void MoveBlock(SDL_Renderer* ren, std::vector<Square> board_squares, Uint8 direction, float frame_time);
 
 
-	void HandleUp(SDL_Renderer* ren, const Uint8 *state, 
-		std::vector<Square> board_squares);
+	void HandleUp(SDL_Renderer* ren, Uint8 direction, std::vector<Square> board_squares);
 
 
-	void HandleLeftAndRight(const Uint8 *state, 
-		std::vector<Square> board_squares);
+	void HandleLeftAndRight(Uint8 direction, std::vector<Square> board_squares);
 
 
-	void HandleDown(const Uint8 *state, float frame_time, std::vector<Square> board_squares);
+	void HandleDown(Uint8 direction, float frame_time, std::vector<Square> board_squares);
 
 
 	Block GetCurrentBlock();
@@ -122,7 +123,7 @@ public:
 	void GenerateRandomBlock(); 
 
 
-	void Rotate(SDL_Renderer* ren, std::vector<Square> board_squares);
+	void Rotate(SDL_Renderer* ren);
 	
 
 };

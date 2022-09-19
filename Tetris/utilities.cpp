@@ -1,6 +1,7 @@
 
 
 #include "utilities.h"
+#include "core.h"
 
 
 Line::Line(){};
@@ -179,18 +180,75 @@ void Print2DArray(std::array<std::array<int, 4>, 4> arr)
 }
 
 
+/*
+* Quick and dirty function to avoid needing colour files loaded
+*/
+SDL_Surface *ColourFromFilename(std::string name)
+{
+    SDL_Surface *ret_surface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
+
+    Uint32 colour_pixel = 0;
+
+    if (name == "green")
+    {
+        colour_pixel = SDL_MapRGB(ret_surface->format, 0, 255, 0);
+    }
+    else if (name == "red")
+    {
+        colour_pixel = SDL_MapRGB(ret_surface->format, 255, 0, 0);
+    }
+    else if (name == "blue")
+    {
+        colour_pixel = SDL_MapRGB(ret_surface->format, 0, 0, 255);
+    }
+    else if (name == "orange")
+    {
+        colour_pixel = SDL_MapRGB(ret_surface->format, 165, 0, 255);
+    }
+    else if (name == "purple")
+    {
+        colour_pixel = SDL_MapRGB(ret_surface->format, 128, 128, 0);
+    }
+    else if (name == "cyan")
+    {
+        colour_pixel = SDL_MapRGB(ret_surface->format, 127, 127, 255);
+    }
+    else if (name == "yellow")
+    {
+        colour_pixel = SDL_MapRGB(ret_surface->format, 255, 0, 255);
+    }
+
+    SDL_FillRect(ret_surface, NULL, colour_pixel);
+    return ret_surface;
+
+}
+
+
 Block::Block(SDL_Renderer *ren, std::string colour_filename,
 	std::array<std::array<int, 4>, 4> block_array) 
 	// : colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
 {
 
-	colour = IMG_LoadTexture(ren, colour_filename.c_str());
+    
+    SDL_Surface *surface = ColourFromFilename(colour_filename);
+    if (surface == NULL)
+    {
+        const char *err = SDL_GetError();
+    }
+
+    colour = SDL_CreateTextureFromSurface(ren, surface);
+
+    SDL_FreeSurface(surface);
+    surface = NULL;
+
+
+	// colour = IMG_LoadTexture(ren, colour_filename.c_str());
 
 	// 192 and 128 are the offsets used to centre the block off screen.
 	// They are only set if a particular location isn't entered into the
 	// function
 
-	this->x = 192;
+	this->x = Game::WINDOW_WIDTH / 2;
 
 	this->y = -128;
 
@@ -221,6 +279,8 @@ Block::Block(const Block &b) //: colour(b.colour)
 	block_squares = b.block_squares;
 
 	current_dir = b.current_dir;
+
+    this->colour = b.colour;
 	/*
 	if (b.colour == nullptr)
 	{
@@ -399,7 +459,11 @@ void Utilities::RenderTexture(SDL_Renderer *ren,
 
 		dest.y = y;
 
-		SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
+        dest.w = 32;
+
+        dest.h = 32;
+
+		//SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
 
 		SDL_RenderCopy(ren, tex, NULL, &dest);
 

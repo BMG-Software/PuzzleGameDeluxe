@@ -1,6 +1,7 @@
 
 
 #include "board.h"
+#include "core.h"
 
 
 Board::Board(){}
@@ -16,10 +17,12 @@ Board::Board(SDL_Renderer *ren)
 	rect.h = 32;
 
 	// Create a base line
-	for (int i = 0; i < 480; i += 32)
+
+    int baseline_width = Game::WINDOW_WIDTH * 0.75;
+	for (int i = Game::WINDOW_WIDTH * 0.25; i < baseline_width; i += 32)
 	{
 
-		rect.y = 800;
+		rect.y = Game::WINDOW_HEIGHT;
    
 		rect.x = i;
 
@@ -35,14 +38,14 @@ bool Board::DrawBoardBlocks(SDL_Renderer *ren)
 
 	for (unsigned int i = 0; i < board_squares.size(); ++i)
 	{
-		/*
-		if (board_squares[i].tex.get() != nullptr)
+		
+		if (board_squares[i].tex != nullptr)
 		{
 
-			Utilities::RenderTexture(ren, board_squares[i].tex.get(),
+			Utilities::RenderTexture(ren, board_squares[i].tex,
 				board_squares[i].x, board_squares[i].y);
 		
-		}*/
+		}
 
 		std::vector<Line> my_lines;
 
@@ -83,27 +86,27 @@ void Board::CheckForLine(int &score)
 	int cascade = 0;
 	int amnt_destroyed = 0;
 
-	for (int i = 800; i > 0; i -= 32)
+	for (int i = Game::WINDOW_HEIGHT; i > 0; i -= 32)
 	{
-		int count = 0;
+        double count = Game::WINDOW_WIDTH * 0.25;
 
 		std::vector<Square> squares_to_delete;
 
 		for (unsigned int x = 0; x < board_squares.size(); ++x)
 		{
 
-			if (board_squares[x].y == i && board_squares[x].y + 32 <= 800)
+			if (board_squares[x].y == i && board_squares[x].y + 32 <= Game::WINDOW_HEIGHT)
 			{
 				if (cascade > 0)
 				{
 					board_squares[x].Update(0, cascade);
 				}
 
-				count += 32;
+				count += 32.0;
 
 				squares_to_delete.push_back(board_squares[x]);
 
-				if (count == 480)
+				if (count == Game::WINDOW_WIDTH * 0.75)
 				{
 					EraseDuplicates(squares_to_delete, board_squares);
 					++amnt_destroyed;
@@ -123,19 +126,13 @@ void Board::CheckForLine(int &score)
 
 bool Board::CheckForFail()
 {
-
 	for (unsigned int i = 0; i < board_squares.size(); ++i)
 	{
-		// TODO: Must re-implement!!
 		if (board_squares[i].top.a.y <= 0)
 		{
-
 			return true;
-
 		}
-
 	}
-
 	return false;
 }
 
@@ -176,15 +173,6 @@ void Board::EraseDuplicates(std::vector<Square> to_remove,
 
 bool Board::CompareSquares(Square one, Square two)
 {
-
-	if (one.x == two.x
-		&& one.y == two.y)
-	{
-
-		return true;
-
-	}
-
-	else return false;
+	return (one.x == two.x && one.y == two.y);
 }
 
