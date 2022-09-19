@@ -225,7 +225,7 @@ std::unique_ptr<SDL_Surface, void(*)(SDL_Surface *)> ColourFromFilename(const st
 
 
 Block::Block(SDL_Renderer *ren, std::string colour_filename,
-	std::array<std::array<int, 4>, 4> block_array) 
+	std::array<std::array<int, 4>, 4> block_array, int startPoint) 
 	// : colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
 {
     auto surface = ColourFromFilename(colour_filename);
@@ -240,7 +240,7 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 	// They are only set if a particular location isn't entered into the
 	// function
 
-	this->x = Game::WindowWidth() / 2;
+	this->x = startPoint;
 	this->y = -128;
 
 	// Block is constructed at default location.

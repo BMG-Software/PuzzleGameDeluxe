@@ -11,31 +11,25 @@ int Game::m_windowHeight = 0;
 
 void Game::InitWinAndRen(bool fullscreen)
 {
-
-	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50, m_windowWidth, m_windowHeight, (fullscreen) ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN));
-
-
-	// ren.reset(SDL_CreateRenderer(win.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
+	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50, m_windowWidth, m_windowHeight, 
+        (fullscreen) ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN));
     ren.reset(SDL_CreateRenderer(win.get(), -1, SDL_RENDERER_ACCELERATED));
 
 	if (win == nullptr || ren == nullptr)
 	{
-
-		std::cout << "Problem initialising window and/or renderer.\n";
-		
+		std::cout << "Problem initialising window and/or renderer.\n";	
 	}
-
 }
-
-
 
 Game::Game(bool fullscreen, int windowWidth, int windowHeight) : 
     win(nullptr, SDL_DestroyWindow),
 	ren(nullptr, SDL_DestroyRenderer),
-	numbers(nullptr, SDL_DestroyTexture)
+	numbers(nullptr, SDL_DestroyTexture),
+    background(nullptr, SDL_DestroyTexture),
+    board_background(nullptr, SDL_DestroyTexture)
 {
-    m_windowWidth = windowWidth;
-    m_windowHeight = windowHeight;
+    m_windowWidth   = windowWidth;
+    m_windowHeight  = windowHeight;
 
 	InitWinAndRen(fullscreen);
 
@@ -43,42 +37,48 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
 	
 	for (int i = 0; i < 320; i += 32)
 	{
-		SDL_Rect temp;
-		temp.x = i;
-		temp.y = 0;
-		temp.w = 32;
-		temp.h = 32;
-
-		number_clips.push_back(temp);
+        number_clips.push_back({ i, 0, 32, 32 });
 	}
 
-	score = 00000000; // Ha why so many zeroes :D
+	score               = 00000000; // Ha why so many zeroes :D
+	gen_block           = true;
+    game_controller     = nullptr;
+    joystick            = nullptr;
+    control_direction   = BlockControl::block_direction_down;
 
-	gen_block = true;
+    auto bg_surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(SDL_LoadBMP(BACKGROUND_FILENAME), SDL_FreeSurface);
+    background      = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>(SDL_CreateTextureFromSurface(ren.get(), bg_surface.get()), SDL_DestroyTexture);
 
-    game_controller = nullptr;
-    joystick = nullptr;
-    control_direction = BlockControl::block_direction_down;
-
-    SDL_Surface *bg_surface = SDL_LoadBMP(BACKGROUND_FILENAME);
-    background = SDL_CreateTextureFromSurface(ren.get(), bg_surface);
-
-    SDL_FreeSurface(bg_surface);
-    bg_surface = NULL;
-
-    SDL_QueryTexture(background, NULL, NULL, &background_src.w, &background_src.h);
+    SDL_QueryTexture(background.get(), NULL, NULL, &background_src.w, &background_src.h);
 
     background_src.x = 0;
     background_src.y = 0;
 
-    background_dest = { 0, 0, windowWidth, windowHeight };
+    background_dest = { 
+        0, 
+        0, 
+        windowWidth, 
+        windowHeight 
+    };
 
-    board_background_dest = { static_cast<int>(windowWidth * 0.25), 0, windowWidth / 2, windowHeight };
-    board_background = SDL_CreateTexture(ren.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth / 2, windowHeight);
+    board_background    = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture *)>(SDL_CreateTexture(ren.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth / 2, windowHeight), SDL_DestroyTexture);
+    m_p1BoardDest       = { 
+        static_cast<int>(windowWidth * 0.05), 
+        0, 
+        448, 
+        windowHeight 
+    };
 
-    SDL_SetTextureBlendMode(board_background, SDL_BLENDMODE_BLEND);
+    m_p2BoardDest = {
+        windowWidth - (448) - static_cast<int>(windowWidth * 0.05),
+        0,
+        448,
+        windowHeight
+    };
+
+    SDL_SetTextureBlendMode(board_background.get(), SDL_BLENDMODE_BLEND);
     
-    SDL_SetRenderTarget(ren.get(), board_background);
+    SDL_SetRenderTarget(ren.get(), board_background.get());
     SDL_SetRenderDrawBlendMode(ren.get(), SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(ren.get(), 127, 127, 127, 127);
     SDL_RenderFillRect(ren.get(), NULL);
@@ -86,11 +86,7 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
     SDL_SetRenderTarget(ren.get(), NULL);
 }
 
-Game::~Game()
-{
-    SDL_DestroyTexture(background);
-    SDL_DestroyTexture(board_background);
-}
+Game::~Game() = default;
 
 
 bool Game::EventLoop()
@@ -100,12 +96,9 @@ bool Game::EventLoop()
 	while (SDL_PollEvent(&e))
 	{
 
-		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE
-			|| e.type == SDL_QUIT)
+		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE || e.type == SDL_QUIT)
 		{
-
 			return true;
-
 		}
         else if (e.type == SDL_KEYDOWN)
         {
@@ -205,7 +198,6 @@ bool Game::EventLoop()
 
 void Game::DrawScore()
 {
-
 	std::string score_string;
 
 	std::stringstream my_stream;
@@ -213,101 +205,64 @@ void Game::DrawScore()
 	my_stream << score;
 	my_stream >> score_string;
 
-	for (unsigned int i = 0; i < score_string.size(); ++i)
+	for (size_t i = 0; i < score_string.size(); ++i)
 	{
 		PrintScore(score_string[i], number_clips[i]);
 	}
-
-
-
 }
 
 
 void Game::PrintScore(char number, SDL_Rect location)
 {
-	
 	std::stringstream convertor;
-
 	convertor << number;
-
-	int my_num;
-
+	int my_num = 0;
 	convertor >> my_num;
 
 	// SDL_RenderCopy(ren.get(), numbers.get(), &number_clips[my_num], &location);
-	
 }
 
 
 void Game::CheckForGenBlock()
 {
-
 	// checks if a new block should be generated
 	if (gen_block)
 	{
-
 		controller.GenerateRandomBlock();
-
 		gen_block = false;
-
 	}
-
 }
 
 
 void Game::DrawAndCheckBoardAddition(float frame_time)
 {
-
 	// Draws the block at it's current location - 
 	// returns true if the block has collided with another.
 	if (controller.DrawBlock(ren.get(), game_board.board_squares, frame_time))
 	{
-
 		game_board.AddToBoard(controller.GetCurrentBlock(), score);
-
 		gen_block = true;
-
 	}
-
 }
-
-int Game::WindowWidth()
-{
-    return m_windowWidth;
-}
-
-int Game::WindowHeight()
-{
-    return m_windowHeight;
-}
-
 
 void Game::Run()
 {
-    
-	controller = BlockControl(ren.get());
-
-	game_board = Board(ren.get());
-    
 	float frame_time = 0.0;
+    
+	controller = BlockControl(ren.get(), m_p1BoardDest);
+	game_board = Board(ren.get(), m_p1BoardDest);
     
 	while (!EventLoop())
 	{
-
-        //if (game_controller == nullptr || joystick == nullptr)
-        //    continue;
-
 		frame_timer.StartTimer();
 
-		SDL_SetRenderDrawColor(ren.get(), 127, 127, 127, 255);
-		
+		SDL_SetRenderDrawColor(ren.get(), 127, 127, 127, 255);	
 		SDL_RenderClear(ren.get());
 
-        SDL_RenderCopy(ren.get(), background, &background_src, &background_dest);
-
-        SDL_RenderCopy(ren.get(), board_background, &board_background_dest, &board_background_dest);
-		
-        
+        SDL_RenderCopy(ren.get(), background.get(), &background_src, &background_dest);
+        SDL_RenderCopy(ren.get(), board_background.get(), &m_p1BoardDest, &m_p1BoardDest);
+        SDL_RenderCopy(ren.get(), board_background.get(), &m_p1BoardDest, &m_p2BoardDest);
+	
 		controller.MoveBlock(ren.get(), game_board.board_squares, control_direction, frame_time);
 		
 		SDL_Delay(0017); // aim for 60 fps
@@ -316,18 +271,17 @@ void Game::Run()
 		
 		DrawAndCheckBoardAddition(frame_time);
 
-		if (game_board.DrawBoardBlocks(ren.get())) break;
+		if (game_board.DrawBoardBlocks(ren.get())) 
+            break;
 		
         DrawScore();
 
 		SDL_RenderPresent(ren.get());
 
 		frame_timer.StopTimer();
-
 		frame_time = frame_timer.GetTimeSeconds();
 
-        control_direction = BlockControl::block_direction_down;
-		
+        control_direction = BlockControl::block_direction_down;	
 	}
 
 }

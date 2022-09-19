@@ -123,8 +123,7 @@ public:
 	Block();
 
 
-	Block(SDL_Renderer *ren, std::string colour_filename,
-		std::array<std::array<int, 4>, 4> block_array);
+	Block(SDL_Renderer *ren, std::string colour_filename, std::array<std::array<int, 4>, 4> block_array, int startPoint);
 
 
 	Block(const Block &b);

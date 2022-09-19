@@ -44,19 +44,14 @@ private:
 
     // Window and renderer could be refactored out into their own class.
 	std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> ren;
-
-
 	std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> win;
-
-
 	std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> numbers;
 
-
-    SDL_Texture *background;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture *)> background;
     SDL_Rect background_src, background_dest;
 
-    SDL_Texture *board_background;
-    SDL_Rect board_background_dest;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture *)> board_background;
+    SDL_Rect m_p1BoardDest, m_p2BoardDest;
 
 
 	BlockControl controller;
@@ -97,14 +92,6 @@ private:
 	
 
 public:
-
-	static int WindowWidth();
-	static int WindowHeight();
-
-    // static const int WINDOW_WIDTH = 1920;
-    // static const int WINDOW_HEIGHT = 1080;
-
-
 	Game(bool fullscreen, int windowWidth, int windowHeight);
 
     virtual ~Game();

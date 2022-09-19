@@ -17,14 +17,12 @@
 
 #include "utilities.h"
 
-
-// Board could also be refactored into components e.g. 
-// it could use the same graphics component as the blocks will.
 class Board
 {
 
 
 private:
+	SDL_Rect m_boardBoundary;
 
 	void CheckForLine(int &score);
 
@@ -48,7 +46,7 @@ public:
 	Board();
 
 
-	Board(SDL_Renderer *ren);
+	Board(SDL_Renderer *ren, const SDL_Rect &boardBoundary);
 
 
 	bool DrawBoardBlocks(SDL_Renderer *ren);

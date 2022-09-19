@@ -76,24 +76,24 @@ Uint8 BlockControl::block_direction_superdown = 4;
 
 BlockControl::BlockControl()
 {
-	speed = 0;
-	velocity = 4;
-	time_updated = 0;
+	speed			= 0;
+	velocity		= 4;
+	time_updated	= 0;
 }
 
-
-BlockControl::BlockControl(SDL_Renderer *ren)
+BlockControl::BlockControl(SDL_Renderer *ren, SDL_Rect boardBoundary)
 {
-
-
 #ifdef _WIN32
-    blocks.push_back(Block(ren, "green", i_block));
-	blocks.push_back(Block(ren, "red", j_block));
-	blocks.push_back(Block(ren, "blue", l_block));
-	blocks.push_back(Block(ren, "orange", o_block));
-	blocks.push_back(Block(ren, "purple", s_block));
-	blocks.push_back(Block(ren, "cyan", t_block));
-	blocks.push_back(Block(ren, "yellow", z_block));
+	m_boardBoundary = boardBoundary;
+	int startPoint = (m_boardBoundary.x + m_boardBoundary.w) / 2;
+
+    blocks.push_back(Block(ren, "green",	i_block, startPoint));
+	blocks.push_back(Block(ren, "red",		j_block, startPoint));
+	blocks.push_back(Block(ren, "blue",		l_block, startPoint));
+	blocks.push_back(Block(ren, "orange",	o_block, startPoint));
+	blocks.push_back(Block(ren, "purple",	s_block, startPoint));
+	blocks.push_back(Block(ren, "cyan",		t_block, startPoint));
+	blocks.push_back(Block(ren, "yellow",	z_block, startPoint));
 #else
 	blocks.push_back(Block(ren, "Resources/green.png", i_block));
 	blocks.push_back(Block(ren, "Resources/red.png", j_block));
@@ -103,9 +103,9 @@ BlockControl::BlockControl(SDL_Renderer *ren)
 	blocks.push_back(Block(ren, "Resources/cyan.png", t_block));
 	blocks.push_back(Block(ren, "Resources/yellow.png", z_block));
 #endif // _WIN32
-	speed = 0;
-	velocity = 4;
-	time_updated = 0;
+	speed			= 0;
+	velocity		= 4;
+	time_updated	= 0;
 
 	game_timer.StartTimer();
 }
@@ -127,7 +127,7 @@ bool PointInLineRange(Point p, Line line)
 }
 
 
-bool BlockControl::CheckCollision(const std::vector<Square> &block_squares, int direction,	const std::vector<Square> &board_squares)
+bool BlockControl::CheckCollision(const std::vector<Square> &block_squares, int direction, const std::vector<Square> &board_squares)
 {
 	for (size_t i = 0; i < block_squares.size(); ++i)
 	{
@@ -158,7 +158,7 @@ bool BlockControl::CheckCollision(const std::vector<Square> &block_squares, int 
 				{
 					return true;
 				}
-				else if (CheckAdvancedCollision(block_squares[i].left, board_squares[x].right, Game::WindowWidth() * 0.25))
+				else if (CheckAdvancedCollision(block_squares[i].left, board_squares[x].right, m_boardBoundary.x))
 				{
 					return true;
 				}
@@ -166,12 +166,11 @@ bool BlockControl::CheckCollision(const std::vector<Square> &block_squares, int 
 
 			if (direction == Block::RIGHT)
 			{
-				if (Utilities::CompareLines(block_squares[i].right,
-					board_squares[x].left))
+				if (Utilities::CompareLines(block_squares[i].right,	board_squares[x].left))
 				{
 					return true;
 				}
-				else if (CheckAdvancedCollision(block_squares[i].right, board_squares[x].left, Game::WindowWidth() * 0.75))
+				else if (CheckAdvancedCollision(block_squares[i].right, board_squares[x].left, m_boardBoundary.x + m_boardBoundary.w))
 				{
 					return true;
 				}

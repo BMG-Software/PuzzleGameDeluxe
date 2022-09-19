@@ -31,6 +31,8 @@ private:
 	int velocity;
 	float time_updated;
 
+	SDL_Rect m_boardBoundary;
+
 	Block current_block;
 	Timer game_timer;
 
@@ -41,7 +43,7 @@ public:
     static Uint8 block_direction_up, block_direction_down, block_direction_left, block_direction_right, block_direction_superdown;
 
 	BlockControl();
-	BlockControl(SDL_Renderer *ren);
+	BlockControl(SDL_Renderer *ren, SDL_Rect boardBoundary);
 	BlockControl(const BlockControl &b);
 
 	bool CheckCollision(const std::vector<Square> &block_squares, int direction, const std::vector<Square> &board_squares);
