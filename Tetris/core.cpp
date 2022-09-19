@@ -52,10 +52,9 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
     auto bg_surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(SDL_LoadBMP(BACKGROUND_FILENAME), SDL_FreeSurface);
     background      = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>(SDL_CreateTextureFromSurface(ren.get(), bg_surface.get()), SDL_DestroyTexture);
 
-    SDL_QueryTexture(background.get(), NULL, NULL, &background_src.w, &background_src.h);
-
     background_src.x = 0;
     background_src.y = 0;
+    SDL_QueryTexture(background.get(), NULL, NULL, &background_src.w, &background_src.h);
 
     background_dest = { 
         0, 
@@ -86,7 +85,6 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
     SDL_SetRenderDrawBlendMode(ren.get(), SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(ren.get(), 127, 127, 127, 127);
     SDL_RenderFillRect(ren.get(), NULL);
-
     SDL_SetRenderTarget(ren.get(), NULL);
 }
 
@@ -203,7 +201,6 @@ bool Game::EventLoop()
 void Game::DrawScore()
 {
 	std::string score_string;
-
 	std::stringstream my_stream;
 
 	my_stream << score;
@@ -252,13 +249,13 @@ bool Game::DrawAndCheckBoardAddition(float frame_time, BlockControl &controller,
 
 void Game::Run()
 {
-    bool genBlock = true;
+    bool p1GenBlock = true, p2GenBlock = true;
 	float frame_time = 0.0;
 
     BlockControl p1Controller(ren.get(), m_p1BoardDest);
-    BlockControl p2Controller(ren.get(), m_p2BoardDest);
-
     Board p1GameBoard(ren.get(), m_p1BoardDest);
+
+    BlockControl p2Controller(ren.get(), m_p2BoardDest);
     Board p2GameBoard(ren.get(), m_p2BoardDest);
     
 	while (!EventLoop())
@@ -273,16 +270,18 @@ void Game::Run()
         SDL_RenderCopy(ren.get(), board_background.get(), &m_p1BoardDest, &m_p2BoardDest);
 	
 		p1Controller.MoveBlock(ren.get(), p1GameBoard.board_squares, control_direction, frame_time);
-		
-		SDL_Delay(0017); // aim for 60 fps
-		
-		CheckForGenBlock(p1Controller, genBlock);
-		
-		genBlock = DrawAndCheckBoardAddition(frame_time, p1Controller, p1GameBoard);
-
+		CheckForGenBlock(p1Controller, p1GenBlock);
+		p1GenBlock = DrawAndCheckBoardAddition(frame_time, p1Controller, p1GameBoard);
 		if (p1GameBoard.DrawBoardBlocks(ren.get())) 
             break;
-		
+
+        p2Controller.MoveBlock(ren.get(), p2GameBoard.board_squares, control_direction, frame_time);
+        CheckForGenBlock(p2Controller, p2GenBlock);
+        p2GenBlock = DrawAndCheckBoardAddition(frame_time, p2Controller, p2GameBoard);
+        if (p2GameBoard.DrawBoardBlocks(ren.get()))
+            break;
+
+		SDL_Delay(0017); // aim for 60 fps
         DrawScore();
 
 		SDL_RenderPresent(ren.get());

@@ -85,7 +85,7 @@ BlockControl::BlockControl(SDL_Renderer *ren, SDL_Rect boardBoundary)
 {
 #ifdef _WIN32
 	m_boardBoundary = boardBoundary;
-	int startPoint = (m_boardBoundary.x + m_boardBoundary.w) / 2;
+	int startPoint = (m_boardBoundary.x + (m_boardBoundary.x + m_boardBoundary.w)) / 2;
 
     blocks.push_back(Block(ren, "green",	i_block, startPoint));
 	blocks.push_back(Block(ren, "red",		j_block, startPoint));
