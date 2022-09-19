@@ -2,23 +2,17 @@
 
 #include "core.h"
 
-#include <Windows.h>
-#include <locale>
-#include <codecvt>
-
-
-
 std::vector<SDL_Rect> Game::number_clips;
 
-static const char *background_filename = "\\background.bmp";
+const char * const BACKGROUND_FILENAME = ".\\Resources\\background.bmp";
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+int Game::m_windowWidth = 0;
+int Game::m_windowHeight = 0;
 
-
-void Game::InitWinAndRen()
+void Game::InitWinAndRen(bool fullscreen)
 {
 
-	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FULLSCREEN));
+	win.reset(SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, 50, m_windowWidth, m_windowHeight, (fullscreen) ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN));
 
 
 	// ren.reset(SDL_CreateRenderer(win.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC));
@@ -34,12 +28,16 @@ void Game::InitWinAndRen()
 }
 
 
-Game::Game() : win(nullptr, SDL_DestroyWindow),
+
+Game::Game(bool fullscreen, int windowWidth, int windowHeight) : 
+    win(nullptr, SDL_DestroyWindow),
 	ren(nullptr, SDL_DestroyRenderer),
 	numbers(nullptr, SDL_DestroyTexture)
 {
+    m_windowWidth = windowWidth;
+    m_windowHeight = windowHeight;
 
-	InitWinAndRen();
+	InitWinAndRen(fullscreen);
 
 	// numbers.reset(IMG_LoadTexture(ren.get(), "Resources\\numbers.png"));
 	
@@ -62,42 +60,7 @@ Game::Game() : win(nullptr, SDL_DestroyWindow),
     joystick = nullptr;
     control_direction = BlockControl::block_direction_down;
 
-    //// Nicked from stack overflow to get files opening
-    //std::wstring buffer;
-    //size_t bufferLen = MAX_PATH;
-
-    //while (true)
-    //{
-    //    buffer.resize(bufferLen);
-    //    bufferLen *= 2;
-
-    //    SetLastError(ERROR_SUCCESS);
-
-    //    auto pathLen = GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), &buffer[0], static_cast<DWORD>(buffer.length()));
-
-    //    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-    //    {
-    //        buffer.resize(pathLen);
-    //        break;
-    //    }
-
-    //}
-
-    //auto dirLen = buffer.length() - 1;
-    //while (dirLen > 0 && buffer[dirLen] != '\\' && buffer[dirLen] != '/')
-    //    dirLen--;
-
-    //if (dirLen > 0)
-    //    buffer.resize(dirLen);
-
-    //using convert_type = std::codecvt_utf8<wchar_t>;
-    //std::wstring_convert<convert_type, wchar_t> converter;
-    //std::string bg_filepath = converter.to_bytes(buffer);
-
-    //// End of nicked stuff
-
-    // bg_filepath.append(background_filename);
-    SDL_Surface *bg_surface = SDL_LoadBMP(".\\Resources\\background.bmp");
+    SDL_Surface *bg_surface = SDL_LoadBMP(BACKGROUND_FILENAME);
     background = SDL_CreateTextureFromSurface(ren.get(), bg_surface);
 
     SDL_FreeSurface(bg_surface);
@@ -108,10 +71,10 @@ Game::Game() : win(nullptr, SDL_DestroyWindow),
     background_src.x = 0;
     background_src.y = 0;
 
-    background_dest = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+    background_dest = { 0, 0, windowWidth, windowHeight };
 
-    board_background_dest = { (int)(WINDOW_WIDTH * 0.25), 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT };
-    board_background = SDL_CreateTexture(ren.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH / 2, WINDOW_HEIGHT);
+    board_background_dest = { static_cast<int>(windowWidth * 0.25), 0, windowWidth / 2, windowHeight };
+    board_background = SDL_CreateTexture(ren.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth / 2, windowHeight);
 
     SDL_SetTextureBlendMode(board_background, SDL_BLENDMODE_BLEND);
     
@@ -121,17 +84,12 @@ Game::Game() : win(nullptr, SDL_DestroyWindow),
     SDL_RenderFillRect(ren.get(), NULL);
 
     SDL_SetRenderTarget(ren.get(), NULL);
-
-
 }
-
 
 Game::~Game()
 {
-
     SDL_DestroyTexture(background);
     SDL_DestroyTexture(board_background);
-
 }
 
 
@@ -311,6 +269,16 @@ void Game::DrawAndCheckBoardAddition(float frame_time)
 
 	}
 
+}
+
+int Game::WindowWidth()
+{
+    return m_windowWidth;
+}
+
+int Game::WindowHeight()
+{
+    return m_windowHeight;
 }
 
 

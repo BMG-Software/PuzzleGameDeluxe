@@ -183,9 +183,9 @@ void Print2DArray(std::array<std::array<int, 4>, 4> arr)
 /*
 * Quick and dirty function to avoid needing colour files loaded
 */
-SDL_Surface *ColourFromFilename(std::string name)
+std::unique_ptr<SDL_Surface, void(*)(SDL_Surface *)> ColourFromFilename(const std::string& name)
 {
-    SDL_Surface *ret_surface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
+    auto ret_surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface *)>(SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0), SDL_FreeSurface);
 
     Uint32 colour_pixel = 0;
 
@@ -218,7 +218,7 @@ SDL_Surface *ColourFromFilename(std::string name)
         colour_pixel = SDL_MapRGB(ret_surface->format, 255, 0, 255);
     }
 
-    SDL_FillRect(ret_surface, NULL, colour_pixel);
+    SDL_FillRect(ret_surface.get(), NULL, colour_pixel);
     return ret_surface;
 
 }
@@ -228,42 +228,25 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 	std::array<std::array<int, 4>, 4> block_array) 
 	// : colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
 {
-
-    
-    SDL_Surface *surface = ColourFromFilename(colour_filename);
-    if (surface == NULL)
+    auto surface = ColourFromFilename(colour_filename);
+    if (surface == nullptr)
     {
         const char *err = SDL_GetError();
     }
 
-    colour = SDL_CreateTextureFromSurface(ren, surface);
-
-    SDL_FreeSurface(surface);
-    surface = NULL;
-
-
-	// colour = IMG_LoadTexture(ren, colour_filename.c_str());
+    colour = SDL_CreateTextureFromSurface(ren, surface.get());
 
 	// 192 and 128 are the offsets used to centre the block off screen.
 	// They are only set if a particular location isn't entered into the
 	// function
 
-	this->x = Game::WINDOW_WIDTH / 2;
-
+	this->x = Game::WindowWidth() / 2;
 	this->y = -128;
 
 	// Block is constructed at default location.
 	ParseBlockArray(ren, block_array);
-	/*
-	if (block_arr.empty())
-	{
-
-		std::cout << "The block array has not been copied correctly.\n";
-
-	}*/
 
 	current_dir = UP; // UP is set as the default direction for each block spawned.
-
 }
 
 

@@ -4,32 +4,25 @@
 #include "core.h"
 
 
-Board::Board(){}
+Board::Board() = default;
 
 
 Board::Board(SDL_Renderer *ren)
 {
-
 	SDL_Rect rect;
-
 	rect.w = 32;
-
 	rect.h = 32;
 
 	// Create a base line
 
-    int baseline_width = Game::WINDOW_WIDTH * 0.75;
-	for (int i = Game::WINDOW_WIDTH * 0.25; i < baseline_width; i += 32)
+    int baseline_width = Game::WindowWidth() * 0.75;
+	for (int i = Game::WindowWidth() * 0.25; i < baseline_width; i += 32)
 	{
-
-		rect.y = Game::WINDOW_HEIGHT;
-   
+		rect.y = Game::WindowHeight();
 		rect.x = i;
 
-		board_squares.push_back(Square(rect, nullptr));
-	    
+		board_squares.push_back(Square(rect, nullptr));   
 	}
-
 }
 
 
@@ -86,16 +79,16 @@ void Board::CheckForLine(int &score)
 	int cascade = 0;
 	int amnt_destroyed = 0;
 
-	for (int i = Game::WINDOW_HEIGHT; i > 0; i -= 32)
+	for (int i = Game::WindowHeight(); i > 0; i -= 32)
 	{
-        double count = Game::WINDOW_WIDTH * 0.25;
+        double count = Game::WindowWidth() * 0.25;
 
 		std::vector<Square> squares_to_delete;
 
 		for (unsigned int x = 0; x < board_squares.size(); ++x)
 		{
 
-			if (board_squares[x].y == i && board_squares[x].y + 32 <= Game::WINDOW_HEIGHT)
+			if (board_squares[x].y == i && board_squares[x].y + 32 <= Game::WindowHeight())
 			{
 				if (cascade > 0)
 				{
@@ -106,7 +99,7 @@ void Board::CheckForLine(int &score)
 
 				squares_to_delete.push_back(board_squares[x]);
 
-				if (count == Game::WINDOW_WIDTH * 0.75)
+				if (count == Game::WindowWidth() * 0.75)
 				{
 					EraseDuplicates(squares_to_delete, board_squares);
 					++amnt_destroyed;
@@ -149,6 +142,7 @@ void Board::EraseDuplicates(std::vector<Square> to_remove,
 
 		deletions = 0;
 
+		// TODO: Fix this. Code is not safe, works on a wing and a prayer
 		for (unsigned int i = 0; i < full_vector.size(); ++i)
 		{
 

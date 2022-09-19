@@ -26,7 +26,6 @@ class Board
 
 private:
 
-
 	void CheckForLine(int &score);
 
 

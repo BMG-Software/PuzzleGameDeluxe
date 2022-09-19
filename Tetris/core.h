@@ -35,6 +35,7 @@ private:
 
 	bool gen_block;
 
+	static int m_windowWidth, m_windowHeight;
 
     SDL_GameController *game_controller;
     SDL_Joystick *joystick;
@@ -75,7 +76,7 @@ private:
 	bool EventLoop();
 
 
-	void InitWinAndRen();
+	void InitWinAndRen(bool fullscreen);
 
 	// TODO: rewrite to utilise true type fonts
 
@@ -97,12 +98,14 @@ private:
 
 public:
 
+	static int WindowWidth();
+	static int WindowHeight();
 
-    static const int WINDOW_WIDTH = 1920;
-    static const int WINDOW_HEIGHT = 1080;
+    // static const int WINDOW_WIDTH = 1920;
+    // static const int WINDOW_HEIGHT = 1080;
 
 
-	Game();
+	Game(bool fullscreen, int windowWidth, int windowHeight);
 
     virtual ~Game();
 

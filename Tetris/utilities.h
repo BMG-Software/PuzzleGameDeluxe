@@ -24,38 +24,23 @@
 
 struct Point
 {
-
-	int x;
-
-
-	int y;
-
+	int x, y;
 };
 
 
 struct Line
 {
-
-	Point a;
-
-
-	Point b;
-
-
 	Line();
-
-
 	Line(int ax, int ay, int bx, int by);
-
-
+	
 	void PrintLineInfo();
 
+	Point a, b;
 };
 
 
 class Square
 {
-
 
 public:
 
@@ -75,14 +60,8 @@ public:
 	// Each square has lines that are used to check collision.
 	// TODO: change lines and use rectangles for collision.
 	Line top;
-
-	
 	Line down;
-
-
 	Line left;
-
-
 	Line right;
 
 
@@ -104,7 +83,6 @@ public:
 };
 
 
-// TODO: Seperate out into a component architecture.
 class Block
 {
 
