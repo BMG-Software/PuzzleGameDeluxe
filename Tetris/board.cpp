@@ -35,9 +35,9 @@ bool Board::DrawBoardBlocks(SDL_Renderer *ren)
 {
 	for (size_t i = 0; i < board_squares.size(); ++i)
 	{
-		if (board_squares[i].tex)
+		if (board_squares[i].m_tex)
 		{
-			Utilities::RenderTexture(ren, board_squares[i].tex,
+			Utilities::RenderTexture(ren, board_squares[i].m_tex.get(),
 				board_squares[i].x, board_squares[i].y);
 		}
 

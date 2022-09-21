@@ -11,6 +11,7 @@
 #include <SDL2/SDL_image.h>
 #endif // _WIN32
 
+#include "resourcestore.h"
 
 #include <vector>
 #include <iostream>
@@ -45,17 +46,10 @@ class Square
 public:
 
 
-	// std::shared_ptr<SDL_Texture> tex;
+	std::shared_ptr<SDL_Texture> m_tex;
 
-
-	SDL_Texture* tex;
-
-	
 	int x;
-
-
 	int y;
-
 
 	// Each square has lines that are used to check collision.
 	// TODO: change lines and use rectangles for collision.
@@ -64,22 +58,12 @@ public:
 	Line left;
 	Line right;
 
-
-	Square(SDL_Rect rect, SDL_Texture *tex);
-
-
+	Square(SDL_Rect rect, std::shared_ptr<SDL_Texture> tex);
 	Square(const Square &s);
 
-
 	void Update(int x, int y);
-
-
 	void PrintLocation();
-
-
 	void PrintSquareInfo();
-
-
 };
 
 
@@ -101,7 +85,7 @@ public:
 	// std::shared_ptr<SDL_Texture> colour;
 
 
-	SDL_Texture* colour;
+	// SDL_Texture* colour;
 
 
 	// Each block saves a copy of it's own array which
@@ -123,7 +107,7 @@ public:
 	Block();
 
 
-	Block(SDL_Renderer *ren, std::string colour_filename, std::array<std::array<int, 4>, 4> block_array, int startPoint);
+	Block(SDL_Renderer *ren, ResourceStore::Colour colour, std::array<std::array<int, 4>, 4> block_array, int startPoint);
 
 
 	Block(const Block &b);
@@ -152,7 +136,8 @@ public:
 
 	int GetLocY();
 
-
+private:
+	std::shared_ptr<SDL_Texture> m_colour;
 };
 
 

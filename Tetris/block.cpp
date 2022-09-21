@@ -88,13 +88,13 @@ BlockControl::BlockControl(SDL_Renderer *ren, SDL_Rect boardBoundary)
 	m_boardBoundary = boardBoundary;
 	int startPoint = (m_boardBoundary.x + (m_boardBoundary.x + m_boardBoundary.w)) / 2;
 
-    blocks.push_back(Block(ren, "green",	i_block, startPoint));
-	blocks.push_back(Block(ren, "red",		j_block, startPoint));
-	blocks.push_back(Block(ren, "blue",		l_block, startPoint));
-	blocks.push_back(Block(ren, "orange",	o_block, startPoint));
-	blocks.push_back(Block(ren, "purple",	s_block, startPoint));
-	blocks.push_back(Block(ren, "cyan",		t_block, startPoint));
-	blocks.push_back(Block(ren, "yellow",	z_block, startPoint));
+    blocks.push_back(Block(ren, ResourceStore::Colour::GREEN,	i_block, startPoint));
+	blocks.push_back(Block(ren, ResourceStore::Colour::RED,		j_block, startPoint));
+	blocks.push_back(Block(ren, ResourceStore::Colour::BLUE,	l_block, startPoint));
+	blocks.push_back(Block(ren, ResourceStore::Colour::ORANGE,	o_block, startPoint));
+	blocks.push_back(Block(ren, ResourceStore::Colour::PURPLE,	s_block, startPoint));
+	blocks.push_back(Block(ren, ResourceStore::Colour::BROWN,	t_block, startPoint));
+	blocks.push_back(Block(ren, ResourceStore::Colour::PINK,	z_block, startPoint));
 #else
 	blocks.push_back(Block(ren, "Resources/green.png", i_block));
 	blocks.push_back(Block(ren, "Resources/red.png", j_block));
@@ -204,7 +204,6 @@ bool BlockControl::DrawBlock(SDL_Renderer *ren, const std::vector<Square> &board
 	}
 
 	RenderBlock(ren);
-
 	return false;
 }
 
@@ -227,7 +226,7 @@ void BlockControl::RenderBlock(SDL_Renderer *ren)
 {
 	for (size_t i = 0; i < current_block.block_squares.size(); ++i)
 	{
-		Utilities::RenderTexture(ren, current_block.block_squares[i].tex/*.get()*/,
+		Utilities::RenderTexture(ren, current_block.block_squares[i].m_tex.get(),
 			current_block.block_squares[i].x, current_block.block_squares[i].y);
 		
 		std::vector<Line> my_lines;
@@ -277,7 +276,6 @@ void BlockControl::HandleLeftAndRight(Uint8 direction, const std::vector<Square>
 		&& !CheckCollision(current_block.block_squares, Block::RIGHT, board_squares))
 	{
 		current_block.UpdateSquares(32, 0);
-
 		time_updated = game_timer.GetTimeSeconds();
 	}
 
@@ -285,7 +283,6 @@ void BlockControl::HandleLeftAndRight(Uint8 direction, const std::vector<Square>
 		&& !CheckCollision(current_block.block_squares, Block::LEFT, board_squares))
 	{
 		current_block.UpdateSquares(-32, 0);
-
 		time_updated = game_timer.GetTimeSeconds();
 	}
 }

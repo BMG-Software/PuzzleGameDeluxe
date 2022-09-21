@@ -29,23 +29,23 @@ void Line::PrintLineInfo()
 }
 
 
-Square::Square(SDL_Rect rect, SDL_Texture *tex) 
+Square::Square(SDL_Rect rect, std::shared_ptr<SDL_Texture> tex) 
 {
-	this->tex = tex; // TODO: Fixme - At a glance I think this texture leaks
+	m_tex = tex;
 
 	x = rect.x;
 	y = rect.y;
 	
-	top = Line(rect.x, rect.y, rect.x + rect.w, rect.y);
-	down = Line(rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h);
-	left = Line(rect.x, rect.y, rect.x, rect.y + rect.h);
-	right = Line(rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h);
+	top		= Line(rect.x, rect.y, rect.x + rect.w, rect.y);
+	down	= Line(rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h);
+	left	= Line(rect.x, rect.y, rect.x, rect.y + rect.h);
+	right	= Line(rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h);
 }
 
 
 Square::Square(const Square &s) 
 {
-	tex = s.tex;
+	m_tex = s.m_tex;
 	x = s.x;
 	y = s.y;
 	top = s.top;
@@ -107,93 +107,34 @@ void Square::PrintSquareInfo()
 }
 
 
-Block::Block() //: colour(nullptr, SDL_DestroyTexture)
+Block::Block() 
+	: m_colour(nullptr, SDL_DestroyTexture)
 {
 	block_arr.fill({ 0, 0, 0, 0 });
 
 	x = 0;
 	y = 0;
-	colour = nullptr;
 	current_dir = 0;
 }
 
 
 void Print2DArray(std::array<std::array<int, 4>, 4> arr)
 {
-
 	for (int i = 0; i < 4; ++i)
 	{
-
 		for (int z = 0; z < 4; ++z)
 		{
-
 			std::cout << arr[i][z] << " ";
-
 		}
-
 		std::cout << "\n";
-
 	}
-
 }
 
 
-/*
-* Quick and dirty function to avoid needing colour files loaded
-*/
-std::unique_ptr<SDL_Surface, void(*)(SDL_Surface *)> ColourFromFilename(const std::string& name)
-{
-    auto ret_surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface *)>(SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0), SDL_FreeSurface);
-
-    Uint32 colour_pixel = 0;
-
-    if (name == "green")
-    {
-        colour_pixel = SDL_MapRGB(ret_surface->format, 0, 255, 0);
-    }
-    else if (name == "red")
-    {
-        colour_pixel = SDL_MapRGB(ret_surface->format, 255, 0, 0);
-    }
-    else if (name == "blue")
-    {
-        colour_pixel = SDL_MapRGB(ret_surface->format, 0, 0, 255);
-    }
-    else if (name == "orange")
-    {
-        colour_pixel = SDL_MapRGB(ret_surface->format, 165, 0, 255);
-    }
-    else if (name == "purple")
-    {
-        colour_pixel = SDL_MapRGB(ret_surface->format, 128, 128, 0);
-    }
-    else if (name == "cyan")
-    {
-        colour_pixel = SDL_MapRGB(ret_surface->format, 127, 127, 255);
-    }
-    else if (name == "yellow")
-    {
-        colour_pixel = SDL_MapRGB(ret_surface->format, 255, 0, 255);
-    }
-
-    SDL_FillRect(ret_surface.get(), NULL, colour_pixel);
-    return ret_surface;
-
-}
-
-
-Block::Block(SDL_Renderer *ren, std::string colour_filename,
+Block::Block(SDL_Renderer *ren, ResourceStore::Colour colour,
 	std::array<std::array<int, 4>, 4> block_array, int startPoint) 
-	// : colour(IMG_LoadTexture(ren, colour_filename.c_str()), SDL_DestroyTexture)
+	: m_colour(ResourceStore::GetResourceStore().LoadTextureColour(ren, colour))
 {
-    auto surface = ColourFromFilename(colour_filename);
-    if (surface == nullptr)
-    {
-        const char *err = SDL_GetError();
-    }
-
-    colour = SDL_CreateTextureFromSurface(ren, surface.get());
-
 	// 192 and 128 are the offsets used to centre the block off screen.
 	// They are only set if a particular location isn't entered into the
 	// function
@@ -208,46 +149,29 @@ Block::Block(SDL_Renderer *ren, std::string colour_filename,
 }
 
 
-Block::Block(const Block &b) //: colour(b.colour)
+Block::Block(const Block &b)
 {
-
-	this->x = b.x;
-
-	this->y = b.y;
+	x = b.x;
+	y = b.y;
 
 	Copy2DArray(b.block_arr);
 
 	block_squares = b.block_squares;
-
 	current_dir = b.current_dir;
-
-    this->colour = b.colour;
-	/*
-	if (b.colour == nullptr)
-	{
-
-		std::cout << "Error copying block colour texture.\n";
-
-	}*/
+	m_colour = b.m_colour;
 
 }
 
 
 void Block::Copy2DArray(std::array<std::array<int, 4>, 4> input)
 {
-
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < input.size(); ++i)
 	{
-
-		for (int x = 0; x < 4; ++x)
+		for (int x = 0; x < input[i].size(); ++x)
 		{
-
 			block_arr[i][x] = input[i][x];
-
 		}
-
 	}
-
 }
 
 
@@ -266,24 +190,18 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 	dest.w = 32;
 	dest.h = 32;
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < block_array.size(); ++i)
 	{
-
-		for (int x = 0; x < 4; ++x)
+		for (int x = 0; x < block_array[i].size(); ++x)
 		{
-
 			if (block_array[i][x] == 1)
 			{
-			
 				dest.x = x * 32 + this->x;
 				dest.y = i * 32 + this->y;
 				
-				block_squares.push_back(Square(dest, /*colour.get()*/colour));
-				
+				block_squares.push_back(Square(dest, m_colour));	
 			}
-
 		}
-
 	}
 	
 }
@@ -291,27 +209,20 @@ void Block::ParseBlockArray(SDL_Renderer *ren,
 
 void Block::UpdateSquares(int x, int y)
 {
-
 	std::cout << "Moved down by: " << y << "\n";
 
 	for (unsigned int i = 0; i < block_squares.size(); ++i)
 	{
-
 		block_squares[i].Update(x, y);
-	
 	}
-	
+
 	this->x += x;
 	this->y += y;
-
 }
 
 
 void Block::Rotate(SDL_Renderer* ren)
 {
-
-	// TODO: Must figure out a rotation algorithm.
-
 	// Should cache block_arr locally so that after
 	// collision is checked the block can be reverted back
 	// if necessary.
@@ -339,14 +250,6 @@ void Block::Rotate(SDL_Renderer* ren)
 	rotated_arr[3][0] = block_arr[3][3];
 
 	ParseBlockArray(ren, rotated_arr);
-	/*
-	for (int i = 0; i < block_squares.size(); ++i)
-	{
-
-		block_squares[i].PrintLocation();
-
-	}*/
-	
 }
 
 
@@ -368,63 +271,33 @@ int Block::GetLocY()
 
 bool Utilities::CompareLines(Line one, Line two)
 {
-
-	if (one.a.x == two.a.x
-		&& one.a.y == two.a.y
-		&& one.b.y == two.b.y
-		&& one.b.x == two.b.x)
-	{
-		return true;
-	}
-	else return false;
-
+	return (one.a.x == two.a.x && one.a.y == two.a.y &&
+		one.b.y == two.b.y && one.b.x == two.b.x);
 }
 
 
 void Utilities::RenderTexture(SDL_Renderer *ren, 
 	SDL_Texture *tex, int x, int y)
 {
-
 	if (tex == nullptr)
 	{
-
 		std::cout << "A null texture has been passed to be rendered.\n";
-
 	}
 	else
 	{
-
-		SDL_Rect dest;
-
-		dest.x = x;
-
-		dest.y = y;
-
-        dest.w = 32;
-
-        dest.h = 32;
-
-		//SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
-
+		SDL_Rect dest = { x, y, 32, 32 };
 		SDL_RenderCopy(ren, tex, NULL, &dest);
-
 	}
-
 }
 
 
 void Utilities::DrawLines(SDL_Renderer *ren, std::vector<Line> lines)
 {
-
 	SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
 
 	for (unsigned int i = 0; i < lines.size(); ++i)
 	{
-
-		SDL_RenderDrawLine(ren, lines[i].a.x, lines[i].a.y,
-			lines[i].b.x, lines[i].b.y);
-
+		SDL_RenderDrawLine(ren, lines[i].a.x, lines[i].a.y,	lines[i].b.x, lines[i].b.y);
 	}
-
 }
 

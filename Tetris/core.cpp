@@ -26,6 +26,7 @@ void Game::InitWinAndRen(bool fullscreen)
 }
 
 Game::Game(bool fullscreen, int windowWidth, int windowHeight) : 
+    m_resourceStore(ResourceStore::GetResourceStore()),
     win(nullptr, SDL_DestroyWindow),
 	ren(nullptr, SDL_DestroyRenderer),
 	numbers(nullptr, SDL_DestroyTexture),
@@ -39,7 +40,7 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
 
 	// numbers.reset(IMG_LoadTexture(ren.get(), "Resources\\numbers.png"));
 	
-	for (int i = 0; i < 320; i += 32)
+	for (int i = 0; i < 320; i += 32) // Setup clips for number spritesheet
 	{
         number_clips.push_back({ i, 0, 32, 32 });
 	}
@@ -50,8 +51,7 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
     m_p1ControlDirection = BlockControl::block_direction_down;
     m_p2ControlDirection = BlockControl::block_direction_down;
 
-    auto bg_surface = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(SDL_LoadBMP(BACKGROUND_FILENAME), SDL_FreeSurface);
-    background      = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>(SDL_CreateTextureFromSurface(ren.get(), bg_surface.get()), SDL_DestroyTexture);
+    background = m_resourceStore.LoadTextureFile(ren.get(), BACKGROUND_FILENAME);
 
     background_src.x = 0;
     background_src.y = 0;
@@ -65,7 +65,7 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
     };
 
     board_background    = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture *)>(SDL_CreateTexture(ren.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth / 2, windowHeight), SDL_DestroyTexture);
-    int boardOffset = static_cast<int>(windowWidth * 0.05);
+    int boardOffset     = static_cast<int>(windowWidth * 0.05);
     m_p1BoardDest       = { 
         boardOffset, 
         0, 

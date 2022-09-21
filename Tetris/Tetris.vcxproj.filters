@@ -7,6 +7,7 @@
     <ClCompile Include="board.cpp" />
     <ClCompile Include="utilities.cpp" />
     <ClCompile Include="timer.cpp" />
+    <ClCompile Include="resourcestore.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h" />
@@ -14,5 +15,7 @@
     <ClInclude Include="board.h" />
     <ClInclude Include="utilities.h" />
     <ClInclude Include="timer.h" />
+    <ClInclude Include="resourcestore.h" />
+    <ClInclude Include="threadsafequeue.h" />
   </ItemGroup>
 </Project>

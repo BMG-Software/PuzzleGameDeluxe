@@ -63,6 +63,8 @@ bool InitialiseSDL()
 
 int main(int argc, char** argv)
 {
+	srand(time(NULL));
+
 	GameSetup gameSetup;
 	ParseCommandLineArgs(argc, argv, gameSetup);
 
