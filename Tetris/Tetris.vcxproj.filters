@@ -8,6 +8,9 @@
     <ClCompile Include="utilities.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="resourcestore.cpp" />
+    <ClCompile Include="networking.cpp">
+      <Filter>Networking</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h" />
@@ -16,6 +19,16 @@
     <ClInclude Include="utilities.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="resourcestore.h" />
-    <ClInclude Include="threadsafequeue.h" />
+    <ClInclude Include="threadsafequeue.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="networking.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Networking">
+      <UniqueIdentifier>{ce6e534f-f923-4684-a346-96717a1c0f0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
