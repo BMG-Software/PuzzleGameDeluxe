@@ -2,6 +2,7 @@
 
 #ifdef _WIN32
 #include <SDL.h>
+#include <SDL_net.h>
 // #include <SDL_image.h>
 #else
 #include <SDL2/SDL.h>
@@ -28,6 +29,7 @@ struct GameSetup
 	bool m_fullscreen = false;
 	int m_width = 0;
 	int m_height = 0;
+	Game::GameType m_type = Game::GameType::SINGLE_PLAYER;
 };
 
 
@@ -38,6 +40,15 @@ void ParseCommandLineArgs(int argc, char** argv, GameSetup &gameSetup)
 		if (strncmp(argv[1], "-f", 2) == 0 || strncmp(argv[1], "-F", 2) == 0)
 		{
 			gameSetup.m_fullscreen = true;
+		}
+
+		if (strncmp(argv[2], "-c", 2) == 0 || strncmp(argv[2], "-C", 2) == 0)
+		{
+			gameSetup.m_type = Game::GameType::TWO_PLAYER_CLIENT;
+		}
+		else if (strncmp(argv[2], "-s", 2) == 0 || strncmp(argv[2], "-S", 2) == 0)
+		{
+			gameSetup.m_type = Game::GameType::TWO_PLAYER_SERVER;
 		}
 	}
 
@@ -52,10 +63,13 @@ bool InitialiseSDL()
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
 	{
-
 		std::cout << "Error initialising SDL.\n";
 		return false;
+	}
 
+	if (SDLNet_Init() < 0)
+	{
+		std::cout << "Error initialising SDL net.\n";
 	}
 	return true;
 }
@@ -71,7 +85,7 @@ int main(int argc, char** argv)
 	if (!InitialiseSDL())
 		return RC_FAILURE;
 
-	Game my_game(gameSetup.m_fullscreen, gameSetup.m_width, gameSetup.m_height);
+	Game my_game(gameSetup.m_fullscreen, gameSetup.m_width, gameSetup.m_height, gameSetup.m_type);
 	my_game.Run();
     SDL_Quit();
 

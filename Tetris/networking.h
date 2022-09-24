@@ -6,9 +6,6 @@
 #include <SDL_net.h>
 
 #include <vector>
-#include <mutex>
-
-#include "threadsafequeue.h"
 
 class Networking final
 {
@@ -37,18 +34,11 @@ public:
     void PushBoardUpdate(const ControlCommand &command);
     bool PullBoardUpdate(ControlCommand &outCommand);
 
-    /*void PushBoardUpdateAsync(const ControlCommand& command);
-    bool PullBoardUpdateAsync(ControlCommand& outCommand);*/
-
 private:
     Type m_type;
 
     TCPsocket m_serverSocket, m_clientSocket;
-    IPaddress *m_serverIp, *m_clientIp;
-
-    /*mutable std::mutex m_sending, m_receiving;
-    std::unique_lock<std::mutex> m_sendingLock, m_receivingLock;
-    ThreadsafeQueue<ControlCommand> m_commands;*/
+    IPaddress m_serverIp, m_clientIp;
 
 };
 

@@ -1,6 +1,7 @@
 
 
 #include "core.h"
+#include "networking.h"
 
 // Constants
 const char * const BACKGROUND_FILENAME = ".\\Resources\\background.bmp";
@@ -25,7 +26,7 @@ void Game::InitWinAndRen(bool fullscreen)
 	}
 }
 
-Game::Game(bool fullscreen, int windowWidth, int windowHeight) : 
+Game::Game(bool fullscreen, int windowWidth, int windowHeight, GameType gameType) : 
     m_resourceStore(ResourceStore::GetResourceStore()),
     win(nullptr, SDL_DestroyWindow),
 	ren(nullptr, SDL_DestroyRenderer),
@@ -33,6 +34,7 @@ Game::Game(bool fullscreen, int windowWidth, int windowHeight) :
     background(nullptr, SDL_DestroyTexture),
     board_background(nullptr, SDL_DestroyTexture)
 {
+    m_gameType = gameType;
     m_windowWidth   = windowWidth;
     m_windowHeight  = windowHeight;
 
@@ -268,6 +270,16 @@ bool Game::DrawAndCheckBoardAddition(float frame_time, BlockControl &controller,
 
 void Game::Run()
 {
+    std::unique_ptr<Networking> networking;
+    if (m_gameType == GameType::TWO_PLAYER_SERVER)
+    {
+        networking = std::make_unique<Networking>(Networking::Type::SERVER);
+    }
+    else if (m_gameType == GameType::TWO_PLAYER_CLIENT)
+    {
+        networking = std::make_unique<Networking>(Networking::Type::CLIENT);
+    }
+
     bool p1GenBlock = true, p2GenBlock = true;
 	float frame_time = 0.0;
 
@@ -294,13 +306,50 @@ void Game::Run()
 		if (p1GameBoard.DrawBoardBlocks(ren.get())) 
             break;
 
-        p2Controller.MoveBlock(ren.get(), p2GameBoard.board_squares, m_p2ControlDirection, frame_time);
-        CheckForGenBlock(p2Controller, p2GenBlock);
-        p2GenBlock = DrawAndCheckBoardAddition(frame_time, p2Controller, p2GameBoard);
-        if (p2GameBoard.DrawBoardBlocks(ren.get()))
-            break;
+        if (m_gameType == GameType::TWO_PLAYER_CLIENT || m_gameType == GameType::TWO_PLAYER_SERVER)
+        {
+            if (networking)
+            {
+                // Send the p1 block latest move
+                unsigned char x = 0, y = 0;
+                if (m_p1ControlDirection == BlockControl::block_direction_left)
+                {
+                    x = 1;
+                }
+                else if (m_p1ControlDirection == BlockControl::block_direction_right)
+                {
+                    x = 2;
+                }
+                networking->PushBoardUpdate(Networking::ControlCommand(x, y));
 
-		SDL_Delay(0017); // aim for 60 fps
+                // Receive the p2 block latest move and apply it
+                x = 0, y = 0;
+                Networking::ControlCommand incoming(0, 0);
+                networking->PullBoardUpdate(incoming);
+                incoming.GetXY(x, y);
+
+                if (x == 1)
+                {
+                    m_p2ControlDirection = BlockControl::block_direction_left;
+                }
+                else if (x == 2)
+                {
+                    m_p2ControlDirection = BlockControl::block_direction_right;
+                }
+            }
+        }
+
+        if (m_gameType != GameType::SINGLE_PLAYER)
+        {
+            p2Controller.MoveBlock(ren.get(), p2GameBoard.board_squares, m_p2ControlDirection, frame_time);
+            CheckForGenBlock(p2Controller, p2GenBlock);
+            p2GenBlock = DrawAndCheckBoardAddition(frame_time, p2Controller, p2GameBoard);
+            if (p2GameBoard.DrawBoardBlocks(ren.get()))
+                break;
+        }
+
+		// SDL_Delay(0017); // aim for 60 fps
+        SDL_Delay(0200); // Slow-mo edition!
         DrawScore();
 
 		SDL_RenderPresent(ren.get());

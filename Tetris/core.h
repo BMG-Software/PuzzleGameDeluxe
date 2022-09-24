@@ -26,7 +26,12 @@
 
 class Game
 {
+public:
+	enum class GameType { SINGLE_PLAYER, TWO_PLAYER_LOCAL, TWO_PLAYER_SERVER, TWO_PLAYER_CLIENT };
+
 private:
+	GameType m_gameType;
+
 	int score;
 	static int m_windowWidth, m_windowHeight;
 
@@ -81,7 +86,9 @@ private:
 	
 
 public:
-	Game(bool fullscreen, int windowWidth, int windowHeight);
+
+
+	Game(bool fullscreen, int windowWidth, int windowHeight, GameType gameType);
 
     virtual ~Game();
 
